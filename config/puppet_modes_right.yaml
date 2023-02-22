@@ -1,0 +1,17 @@
+port: /dev/ttyDXL_puppet_right
+
+groups:
+  arm:
+    operating_mode: position
+    profile_type: velocity
+    profile_velocity: 0
+    profile_acceleration: 0
+    torque_enable: true
+
+singles:
+  gripper:
+    operating_mode: linear_position
+    profile_type: velocity
+    profile_velocity: 0
+    profile_acceleration: 0
+    torque_enable: true

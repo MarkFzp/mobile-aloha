@@ -1,0 +1,144 @@
+<launch>
+
+  <arg name="robot_model_master"                default="wx250s"/>
+  <arg name="robot_model_puppet"                default="vx300s"/>
+
+  <arg name="base_link_master"                  default="base_link"/>
+  <arg name="base_link_puppet"                  default="base_link"/>
+
+  <arg name="master_modes_left"                 default="$(find aloha)/config/master_modes_left.yaml"/>
+  <arg name="puppet_modes_left"                 default="$(find aloha)/config/puppet_modes_left.yaml"/>
+  <arg name="master_modes_right"                default="$(find aloha)/config/master_modes_right.yaml"/>
+  <arg name="puppet_modes_right"                default="$(find aloha)/config/puppet_modes_right.yaml"/>
+
+  <arg name="launch_driver"                     default="true"/>
+  <arg name="use_sim"                           default="false"/>
+
+  <arg name="robot_name_master_left"            value="master_left"/>
+  <arg name="robot_name_puppet_left"            value="puppet_left"/>
+  <arg name="robot_name_master_right"           value="master_right"/>
+  <arg name="robot_name_puppet_right"           value="puppet_right"/>
+
+
+  <include if="$(arg launch_driver)" file="$(find interbotix_xsarm_control)/launch/xsarm_control.launch">
+    <arg name="robot_model"                       value="$(arg robot_model_master)"/>
+    <arg name="robot_name"                        value="$(arg robot_name_master_left)"/>
+    <arg name="base_link_frame"                   value="$(arg base_link_master)"/>
+    <arg name="use_world_frame"                   value="false"/>
+    <arg name="use_rviz"                          value="false"/>
+    <arg name="mode_configs"                      value="$(arg master_modes_left)"/>
+    <arg name="use_sim"                           value="$(arg use_sim)"/>
+  </include>
+
+  <include if="$(arg launch_driver)" file="$(find interbotix_xsarm_control)/launch/xsarm_control.launch">
+    <arg name="robot_model"                       value="$(arg robot_model_master)"/>
+    <arg name="robot_name"                        value="$(arg robot_name_master_right)"/>
+    <arg name="base_link_frame"                   value="$(arg base_link_master)"/>
+    <arg name="use_world_frame"                   value="false"/>
+    <arg name="use_rviz"                          value="false"/>
+    <arg name="mode_configs"                      value="$(arg master_modes_right)"/>
+    <arg name="use_sim"                           value="$(arg use_sim)"/>
+  </include>
+
+
+  <include if="$(arg launch_driver)" file="$(find interbotix_xsarm_control)/launch/xsarm_control.launch">
+    <arg name="robot_model"                       value="$(arg robot_model_puppet)"/>
+    <arg name="robot_name"                        value="$(arg robot_name_puppet_left)"/>
+    <arg name="base_link_frame"                   value="$(arg base_link_puppet)"/>
+    <arg name="use_world_frame"                   value="false"/>
+    <arg name="use_rviz"                          value="false"/>
+    <arg name="mode_configs"                      value="$(arg puppet_modes_left)"/>
+    <arg name="use_sim"                           value="$(arg use_sim)"/>
+  </include>
+
+  <include if="$(arg launch_driver)" file="$(find interbotix_xsarm_control)/launch/xsarm_control.launch">
+    <arg name="robot_model"                       value="$(arg robot_model_puppet)"/>
+    <arg name="robot_name"                        value="$(arg robot_name_puppet_right)"/>
+    <arg name="base_link_frame"                   value="$(arg base_link_puppet)"/>
+    <arg name="use_world_frame"                   value="false"/>
+    <arg name="use_rviz"                          value="false"/>
+    <arg name="mode_configs"                      value="$(arg puppet_modes_right)"/>
+    <arg name="use_sim"                           value="$(arg use_sim)"/>
+  </include>
+
+
+  <node
+    name="master_left_transform_broadcaster"
+    pkg="tf2_ros"
+    type="static_transform_publisher"
+    args="0 -0.25 0 0 0 0 /world /$(arg robot_name_master_left)/base_link"/>
+
+   <node
+    name="master_right_transform_broadcaster"
+    pkg="tf2_ros"
+    type="static_transform_publisher"
+    args="0 -0.25 0 0 0 0 /world /$(arg robot_name_master_right)/base_link"/>
+
+
+  <node
+    name="puppet_left_transform_broadcaster"
+    pkg="tf2_ros"
+    type="static_transform_publisher"
+    args="0 0.25 0 0 0 0 /world /$(arg robot_name_puppet_left)/base_link"/>
+
+  <node
+    name="puppet_right_transform_broadcaster"
+    pkg="tf2_ros"
+    type="static_transform_publisher"
+    args="0 0.25 0 0 0 0 /world /$(arg robot_name_puppet_right)/base_link"/>
+
+  <node name="usb_cam_high" pkg="usb_cam" type="usb_cam_node" output="screen" >
+    <param name="video_device" value="/dev/CAM_HIGH" />
+    <param name="framerate" value="60" />
+    <param name="image_width" value="640" />
+    <param name="image_height" value="480" />
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="usb_cam" />
+    <param name="io_method" value="mmap"/>
+    <param name="autofocus" value="false"/>
+    <param name="focus" value="5"/>
+    <param name="autoexposure" value="true"/>
+  </node>
+
+  <node name="usb_cam_low" pkg="usb_cam" type="usb_cam_node" output="screen" >
+    <param name="video_device" value="/dev/CAM_LOW" />
+    <param name="framerate" value="60" />
+    <param name="image_width" value="640" />
+    <param name="image_height" value="480" />
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="usb_cam" />
+    <param name="io_method" value="mmap"/>
+    <param name="autofocus" value="false"/>
+    <param name="focus" value="35"/>
+    <param name="autoexposure" value="true"/>
+  </node>
+
+  <node name="usb_cam_left_wrist" pkg="usb_cam" type="usb_cam_node" output="screen" >
+    <param name="video_device" value="/dev/CAM_LEFT_WRIST" />
+    <param name="framerate" value="60" />
+    <param name="image_width" value="640" />
+    <param name="image_height" value="480" />
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="usb_cam" />
+    <param name="io_method" value="mmap"/>
+    <param name="autofocus" value="false"/>
+    <param name="focus" value="40"/>
+    <param name="autoexposure" value="true"/>
+  </node>
+
+  <node name="usb_cam_right_wrist" pkg="usb_cam" type="usb_cam_node" output="screen" >
+    <param name="video_device" value="/dev/CAM_RIGHT_WRIST" />
+    <param name="framerate" value="60" />
+    <param name="image_width" value="640" />
+    <param name="image_height" value="480" />
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="usb_cam" />
+    <param name="io_method" value="mmap"/>
+    <param name="autofocus" value="false"/>
+    <param name="focus" value="40"/>
+    <param name="autoexposure" value="true"/>
+  </node>
+
+
+
+</launch>
