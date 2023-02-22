@@ -16,7 +16,9 @@
 4. ``source /opt/ros/noetic/setup.sh && source ~/interbotix_ws/devel/setup.sh``
 5. ``sudo apt-get install ros-noetic-usb-cam && sudo apt-get install ros-noetic-cv-bridge``
 6. run ``catkin_make`` inside ``~/interbotix_ws``, make sure the build is successful
-
+7. go to ``~/interbotix_ws/src/interbotix_ros_toolboxes/interbotix_xs_toolbox/interbotix_xs_modules/src/interbotix_xs_modules/arm.py``, find function ``publish_positions``.
+   Change ``self.T_sb = mr.FKinSpace(self.robot_des.M, self.robot_des.Slist, self.joint_commands)`` to ``self.T_sb = None``.
+   This prevents the code from calculating FK at every step which delays teleoperation.
 ### Hardware installation:
 
 The goal of this section is to run ``roslaunch aloha 4arms_teleop.launch``, which starts
