@@ -49,8 +49,8 @@ port with the following mapping:
   - ``ttyDXL_right_puppet``: right puppet robot (puppet: the robot that performs the task)
   - ``ttyDXL_left_master``: left master robot
   - ``ttyDXL_left_puppet``: left puppet robot
-- Take ``ttyDXL0``: right master robot as an example:
-  1. Find the port that the right master robot is currently binding to, e.g. ``ttyDXL_right_master``
+- Take ``ttyDXL_right_master``: right master robot as an example:
+  1. Find the port that the right master robot is currently binding to, e.g. ``ttyUSB0``
   2. run ``udevadm info --name=/dev/ttyUSB0 --attribute-walk | grep serial`` to obtain the serial number. Use the first one that shows up, the format should look similar to ``FT6S4DSP``.
   3. ``sudo vim /etc/udev/rules.d/99-fixed-interbotix-udev.rules`` and add the following line: 
 
