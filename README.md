@@ -2,6 +2,9 @@
 
 ### Project Website: https://tonyzhaozh.github.io/aloha/
 
+This codebase contains implementation for teleoperation and data collection with real robots.
+It is tested for Ubuntu 20.04 + ROS 1 noetic, with an ongoing ROS 2 compatibility effort.
+
 ### Repo Structure
 - ``config``: a config for each robot, designating the port they should bind to, more details in quick start guide.
 - ``launch``: a ROS launch file for all 4 cameras and all 4 robots.
@@ -10,7 +13,7 @@
 ## Quick start guide
 
 ### Software installation - ROS:
-1. Install ROS and interbotix software following https://www.trossenrobotics.com/docs/interbotix_xsarms/ros_interface/software_setup.html
+1. Install ROS and interbotix software following https://docs.trossenrobotics.com/interbotix_xsarms_docs/
 2. This will create the directory ``~/interbotix_ws`` which contains ``src``.
 3. git clone this repo inside ``~/interbotix_ws/src``
 4. ``source /opt/ros/noetic/setup.sh && source ~/interbotix_ws/devel/setup.sh``
