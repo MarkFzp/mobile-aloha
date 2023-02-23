@@ -59,18 +59,18 @@ The robot *will* collapse if motors are torque off i.e. there is no automaticall
 - One issue that arises is the port each robot binds to can change over time, e.g. a robot that
 is initially ``ttyUSB0`` might suddenly become ``ttyUSB5``. To resolve this, we bind each robot to a fixed symlink
 port with the following mapping:
-  - ``ttyDXL_right_master``: right master robot (master: the robot that the operator would be holding)
-  - ``ttyDXL_right_puppet``: right puppet robot (puppet: the robot that performs the task)
-  - ``ttyDXL_left_master``: left master robot
-  - ``ttyDXL_left_puppet``: left puppet robot
-- Take ``ttyDXL_right_master``: right master robot as an example:
+  - ``ttyDXL_master_right``: right master robot (master: the robot that the operator would be holding)
+  - ``ttyDXL_puppet_right``: right puppet robot (puppet: the robot that performs the task)
+  - ``ttyDXL_master_left``: left master robot
+  - ``ttyDXL_puppet_left``: left puppet robot
+- Take ``ttyDXL_master_right``: right master robot as an example:
   1. Find the port that the right master robot is currently binding to, e.g. ``ttyUSB0``
   2. run ``udevadm info --name=/dev/ttyUSB0 --attribute-walk | grep serial`` to obtain the serial number. Use the first one that shows up, the format should look similar to ``FT6S4DSP``.
   3. ``sudo vim /etc/udev/rules.d/99-fixed-interbotix-udev.rules`` and add the following line: 
 
-         SUBSYSTEM=="tty", ATTRS{serial}=="<serial number here>", ENV{ID_MM_DEVICE_IGNORE}="1", ATTR{device/latency_timer}="1", SYMLINK+="ttyDXL_right_master"
+         SUBSYSTEM=="tty", ATTRS{serial}=="<serial number here>", ENV{ID_MM_DEVICE_IGNORE}="1", ATTR{device/latency_timer}="1", SYMLINK+="ttyDXL_master_right"
 
-  4. This will make sure the right master robot is *always* binding to ``ttyDXL_right_master``
+  4. This will make sure the right master robot is *always* binding to ``ttyDXL_master_right``
   5. Repeat with the rest of 3 arms.
 - To apply the changes, run ``sudo udevadm control --reload && sudo udevadm trigger``
 - If successful, you should be able to find ``ttyDXL*`` in your ``/dev``

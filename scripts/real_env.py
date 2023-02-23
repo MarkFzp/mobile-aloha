@@ -23,18 +23,18 @@ class RealEnv:
                         right_arm_qpos (6),            # absolute joint position
                         right_gripper_positions (1),]  # normalized gripper position (0: close, 1: open)
 
-    Observation space: {"qpos": [left_arm_qpos (6),         # absolute joint position
-                                left_gripper_position (1),  # normalized gripper position (0: close, 1: open)
-                                right_arm_qpos (6),         # absolute joint position
-                                right_gripper_qpos (1)]     # normalized gripper position (0: close, 1: open)
-                        "qvel": [left_arm_qvel (6),         # absolute joint velocity (rad)
-                                left_gripper_velocity (1),  # normalized gripper velocity (pos: opening, neg: closing)
-                                right_arm_qvel (6),         # absolute joint velocity (rad)
-                                right_gripper_qvel (1)]     # normalized gripper velocity (pos: opening, neg: closing)
-                        "images": [cam_high (480x640x3),        # h, w, c, dtype='uint8'
-                                   cam_low (480x640x3),         # h, w, c, dtype='uint8'
-                                   cam_left_wrist (480x640x3),  # h, w, c, dtype='uint8'
-                                   cam_right_wrist (480x640x3), # h, w, c, dtype='uint8'
+    Observation space: {"qpos": Concat[ left_arm_qpos (6),          # absolute joint position
+                                        left_gripper_position (1),  # normalized gripper position (0: close, 1: open)
+                                        right_arm_qpos (6),         # absolute joint position
+                                        right_gripper_qpos (1)]     # normalized gripper position (0: close, 1: open)
+                        "qvel": Concat[ left_arm_qvel (6),         # absolute joint velocity (rad)
+                                        left_gripper_velocity (1),  # normalized gripper velocity (pos: opening, neg: closing)
+                                        right_arm_qvel (6),         # absolute joint velocity (rad)
+                                        right_gripper_qvel (1)]     # normalized gripper velocity (pos: opening, neg: closing)
+                        "images": {"cam_high": (480x640x3),        # h, w, c, dtype='uint8'
+                                   "cam_low": (480x640x3),         # h, w, c, dtype='uint8'
+                                   "cam_left_wrist": (480x640x3),  # h, w, c, dtype='uint8'
+                                   "cam_right_wrist": (480x640x3)} # h, w, c, dtype='uint8'
     """
 
     def __init__(self, init_node, setup_robots=True):
