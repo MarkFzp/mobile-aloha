@@ -3,7 +3,6 @@
 ### Project Website: https://tonyzhaozh.github.io/aloha/
 
 This codebase contains implementation for teleoperation and data collection with real robots.
-It is tested for Ubuntu 20.04 + ROS 1 noetic, with an ongoing ROS 2 compatibility effort.
 
 ### Repo Structure
 - ``config``: a config for each robot, designating the port they should bind to, more details in quick start guide.
@@ -11,6 +10,21 @@ It is tested for Ubuntu 20.04 + ROS 1 noetic, with an ongoing ROS 2 compatibilit
 - ``scripts``: python code for teleop and data collection
 
 ## Quick start guide
+
+### Hardware selection 
+
+We suggest using a "heavy-duty" computer if possible. 
+
+*In particular, at least 4 USB3 ports are needed.* We have seen in one case that a machine was not able to stably connect to all 4 robot arms simultaneously over USB.
+
+### Software selection -- OS:
+
+Currently tested and working configurations: 
+- :white_check_mark: Ubuntu 18.04 + ROS 1 noetic
+- :white_check_mark: Ubuntu 20.04 + ROS 1 noetic
+
+Ongoing testing (compatibility effort underway):
+- :construction: ROS 2
 
 ### Software installation - ROS:
 1. Install ROS and interbotix software following https://docs.trossenrobotics.com/interbotix_xsarms_docs/
