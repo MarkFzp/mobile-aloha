@@ -1,14 +1,19 @@
+### Task parameters
 
-### Parameters that changes across tasks
-EPISODE_LEN = 600
+DATA_DIR = '<put your data dir here>'
+TASK_CONFIGS = {
+    'aloha_wear_shoe':{
+        'dataset_dir': DATA_DIR + '/aloha_wear_shoe',
+        'num_episodes': 50,
+        'episode_len': 400,
+        'camera_names': ['cam_high', 'cam_low', 'cam_left_wrist', 'cam_right_wrist']
+    },
+}
 
 ### ALOHA fixed constants
 DT = 0.02
 JOINT_NAMES = ["waist", "shoulder", "elbow", "forearm_roll", "wrist_angle", "wrist_rotate"]
-CAMERA_NAMES = ['cam_high', 'cam_low', 'cam_left_wrist', 'cam_right_wrist'] # defines the number and ordering of cameras
-BOX_INIT_POSE = [0.2, 0.5, 0.05, 1, 0, 0, 0]
 START_ARM_POSE = [0, -0.96, 1.16, 0, -0.3, 0, 0.02239, -0.02239,  0, -0.96, 1.16, 0, -0.3, 0, 0.02239, -0.02239]
-SIM_CAMERA_NAMES = ['main']
 
 # Left finger position limits (qpos[7]), right_finger = -1 * left_finger
 MASTER_GRIPPER_POSITION_OPEN = 0.02417

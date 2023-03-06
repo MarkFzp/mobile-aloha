@@ -1,19 +1,15 @@
-# !/usr/bin/env python
 import os
-import rospy
-import cv2
 import time
-import pickle
+import h5py
+import argparse
+import h5py_cache
 import numpy as np
 from tqdm import tqdm
-import h5py
-import h5py_cache
-import argparse
 
-from constants import DT, CAMERA_NAMES, EPISODE_LEN, START_ARM_POSE, MASTER_GRIPPER_JOINT_MID, PUPPET_GRIPPER_JOINT_CLOSE
-from constants import PUPPET_GRIPPER_JOINT_OPEN
-from utils import Recorder, ImageRecorder, get_arm_joint_positions, get_arm_gripper_positions
-from utils import setup_master_bot, setup_puppet_bot, move_arms, torque_on, torque_off, move_grippers
+from constants import DT, START_ARM_POSE, TASK_CONFIGS
+from constants import MASTER_GRIPPER_JOINT_MID, PUPPET_GRIPPER_JOINT_CLOSE, PUPPET_GRIPPER_JOINT_OPEN
+from robot_utils import Recorder, ImageRecorder, get_arm_gripper_positions
+from robot_utils import move_arms, torque_on, torque_off, move_grippers
 from real_env import make_real_env, get_action
 
 from interbotix_xs_modules.arm import InterbotixManipulatorXS
@@ -69,7 +65,7 @@ def opening_ceremony(master_bot_left, master_bot_right, puppet_bot_left, puppet_
     print(f'Started!')
 
 
-def capture_one_episode(dt, max_timesteps, dataset_dir, dataset_name, overwrite):
+def capture_one_episode(dt, max_timesteps, camera_names, dataset_dir, dataset_name, overwrite):
     print(f'Dataset name: {dataset_name}')
 
     # source of data
@@ -136,7 +132,7 @@ def capture_one_episode(dt, max_timesteps, dataset_dir, dataset_name, overwrite)
         '/observations/qvel': [],
         '/action': [],
     }
-    for cam_name in CAMERA_NAMES:
+    for cam_name in camera_names:
         data_dict[f'/observations/images/{cam_name}'] = []
 
     # len(action): max_timesteps, len(time_steps): max_timesteps + 1
@@ -146,7 +142,7 @@ def capture_one_episode(dt, max_timesteps, dataset_dir, dataset_name, overwrite)
         data_dict['/observations/qpos'].append(ts.observation['qpos'])
         data_dict['/observations/qvel'].append(ts.observation['qvel'])
         data_dict['/action'].append(action)
-        for cam_name in CAMERA_NAMES:
+        for cam_name in camera_names:
             data_dict[f'/observations/images/{cam_name}'].append(ts.observation['images'][cam_name])
 
     # HDF5
@@ -157,18 +153,11 @@ def capture_one_episode(dt, max_timesteps, dataset_dir, dataset_name, overwrite)
         root.attrs['sim'] = False
         obs = root.create_group('observations')
         image = obs.create_group('images')
-        cam_high = image.create_dataset('cam_high', (max_timesteps, 480, 640, 3), dtype='uint8', chunks=(1, 480, 640, 3),)
-                                        # compression='gzip',compression_opts=2,)
-                                        # compression=32001, compression_opts=(0, 0, 0, 0, 9, 1, 1), shuffle=False)
-        cam_low = image.create_dataset('cam_low', (max_timesteps, 480, 640, 3), dtype='uint8', chunks=(1, 480, 640, 3),)
-                                       # compression='gzip',compression_opts=2,)
-                                       # compression=32001, compression_opts=(0, 0, 0, 0, 9, 1, 1), shuffle=False)
-        cam_left_wrist = image.create_dataset('cam_left_wrist', (max_timesteps, 480, 640, 3), dtype='uint8', chunks=(1, 480, 640, 3),)
-                                              # compression='gzip',compression_opts=2,)
-                                              # compression=32001, compression_opts=(0, 0, 0, 0, 9, 1, 1), shuffle=False)
-        cam_right_wrist = image.create_dataset('cam_right_wrist', (max_timesteps, 480, 640, 3), dtype='uint8', chunks=(1, 480, 640, 3),)
-                                               # compression='gzip',compression_opts=2,)
-                                               # compression=32001, compression_opts=(0, 0, 0, 0, 9, 1, 1), shuffle=False)
+        for cam_name in camera_names:
+            _ = image.create_dataset(cam_name, (max_timesteps, 480, 640, 3), dtype='uint8',
+                                     chunks=(1, 480, 640, 3), )
+            # compression='gzip',compression_opts=2,)
+            # compression=32001, compression_opts=(0, 0, 0, 0, 9, 1, 1), shuffle=False)
         qpos = obs.create_dataset('qpos', (max_timesteps, 14))
         qvel = obs.create_dataset('qvel', (max_timesteps, 14))
         action = root.create_dataset('action', (max_timesteps, 14))
@@ -181,18 +170,34 @@ def capture_one_episode(dt, max_timesteps, dataset_dir, dataset_name, overwrite)
 
 
 def main(args):
-    dataset_dir = args['dataset_dir']
-    episode_idx = args['episode_idx']
-    max_timesteps = EPISODE_LEN
-    dataset_name_prefix = ''
+    task_config = TASK_CONFIGS[args['task_name']]
+    dataset_dir = task_config['dataset_dir']
+    max_timesteps = task_config['episode_len']
+    camera_names = task_config['camera_names']
+
+    if args['episode_idx'] is not None:
+        episode_idx = args['episode_idx']
+    else:
+        episode_idx = get_auto_index(dataset_dir)
     overwrite = True
 
-    dataset_name = f'{dataset_name_prefix}episode_{episode_idx}'
+    dataset_name = f'episode_{episode_idx}'
     print(dataset_name + '\n')
     while True:
-        is_success = capture_one_episode(DT, max_timesteps, dataset_dir, dataset_name, overwrite)
-        if is_success:
+        is_healthy = capture_one_episode(DT, max_timesteps, camera_names, dataset_dir, dataset_name, overwrite)
+        if is_healthy:
             break
+
+
+def get_auto_index(dataset_dir, dataset_name_prefix = '', data_suffix = 'hdf5'):
+    max_idx = 1000
+    if not os.path.isdir(dataset_dir):
+        os.makedirs(dataset_dir)
+    for i in range(max_idx+1):
+        if not os.path.isfile(os.path.join(dataset_dir, f'{dataset_name_prefix}episode_{i}.{data_suffix}')):
+            return i
+    raise Exception(f"Error getting auto index, or more than {max_idx} episodes")
+
 
 def print_dt_diagnosis(actual_dt_history):
     actual_dt_history = np.array(actual_dt_history)
@@ -217,8 +222,8 @@ def debug():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset_dir', action='store', type=str, help='Dataset dir.', required=True)
-    parser.add_argument('--episode_idx', action='store', type=int, help='Episode index.', required=False)
+    parser.add_argument('--task_name', action='store', type=str, help='Task name.', required=True)
+    parser.add_argument('--episode_idx', action='store', type=int, help='Episode index.', default=None, required=False)
     main(vars(parser.parse_args()))
     # debug()
 

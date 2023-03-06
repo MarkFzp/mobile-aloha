@@ -6,7 +6,7 @@ e = IPython.embed
 from interbotix_xs_modules.arm import InterbotixManipulatorXS
 from interbotix_xs_msgs.msg import JointSingleCommand
 from constants import MASTER2PUPPET_JOINT_FN, DT, START_ARM_POSE, MASTER_GRIPPER_JOINT_MID, PUPPET_GRIPPER_JOINT_CLOSE
-from utils import torque_on, torque_off, move_arms, move_grippers, get_arm_gripper_positions
+from robot_utils import torque_on, torque_off, move_arms, move_grippers, get_arm_gripper_positions
 
 def prep_robots(master_bot, puppet_bot):
     # reboot gripper motors, and set operating modes for all motors

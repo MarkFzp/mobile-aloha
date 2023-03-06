@@ -7,7 +7,7 @@ This codebase contains implementation for teleoperation and data collection with
 ### Repo Structure
 - ``config``: a config for each robot, designating the port they should bind to, more details in quick start guide.
 - ``launch``: a ROS launch file for all 4 cameras and all 4 robots.
-- ``scripts``: python code for teleop and data collection
+- ``aloha_scripts``: python code for teleop and data collection
 
 ## Quick start guide
 
@@ -139,12 +139,12 @@ All robots will rise to a height that is easy for teleoperation.
     
     # Right hand terminal
     conda activate aloha
-    cd ~/interbotix_ws/src/aloha/scripts
+    cd ~/interbotix_ws/src/aloha/aloha_scripts
     python3 one_side_teleop.py right
     
     # Left hand terminal
     conda activate aloha
-    cd ~/interbotix_ws/src/aloha/scripts
+    cd ~/interbotix_ws/src/aloha/aloha_scripts
     python3 one_side_teleop.py left
 
 The teleoperation will start when the master side gripper is closed.
@@ -155,7 +155,7 @@ The teleoperation will start when the master side gripper is closed.
 To set up a new terminal, run:
 
     conda activate aloha
-    cd ~/interbotix_ws/src/aloha/scripts
+    cd ~/interbotix_ws/src/aloha/aloha_scripts
 
 
 The ``one_side_teleop.py`` we ran is for testing teleoperation and has no data collection. To collect data for an episode, run:

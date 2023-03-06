@@ -1,6 +1,6 @@
 import os
 import h5py
-from utils import move_grippers
+from robot_utils import move_grippers
 import argparse
 from real_env import make_real_env
 from constants import JOINT_NAMES, PUPPET_GRIPPER_JOINT_OPEN

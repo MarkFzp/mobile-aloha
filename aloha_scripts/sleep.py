@@ -1,5 +1,5 @@
 from interbotix_xs_modules.arm import InterbotixManipulatorXS
-from utils import move_arms, torque_on
+from robot_utils import move_arms, torque_on
 
 def main():
     puppet_bot_left = InterbotixManipulatorXS(robot_model="vx300s", group_name="arm", gripper_name="gripper", robot_name=f'puppet_left', init_node=True)
