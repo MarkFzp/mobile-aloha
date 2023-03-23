@@ -72,6 +72,13 @@ class RealEnv:
         right_gripper_qvel = [PUPPET_GRIPPER_VELOCITY_NORMALIZE_FN(right_qvel_raw[7])]
         return np.concatenate([left_arm_qvel, left_gripper_qvel, right_arm_qvel, right_gripper_qvel])
 
+    def get_effort(self):
+        left_effort_raw = self.recorder_left.effort
+        right_effort_raw = self.recorder_right.effort
+        left_robot_effort = left_effort_raw[:7]
+        right_robot_effort = right_effort_raw[:7]
+        return np.concatenate([left_robot_effort, right_robot_effort])
+
     def get_images(self):
         return self.image_recorder.get_images()
 
@@ -97,6 +104,7 @@ class RealEnv:
         obs = collections.OrderedDict()
         obs['qpos'] = self.get_qpos()
         obs['qvel'] = self.get_qvel()
+        obs['effort'] = self.get_effort()
         obs['images'] = self.get_images()
         return obs
 
