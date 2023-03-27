@@ -1,8 +1,9 @@
 # ALOHA: A Low-cost Open-source Hardware System for Bimanual Teleoperation
 
-### Project Website: https://tonyzhaozh.github.io/aloha/
+#### Project Website: https://tonyzhaozh.github.io/aloha/
 
-This codebase contains implementation for teleoperation and data collection with real robots.
+This codebase contains implementation for teleoperation and data collection with the ALOHA hardware.
+To train imitation learning algorithms, you would also need to install [ACT](https://github.com/tonyzhaozh/act).
 
 ### Repo Structure
 - ``config``: a config for each robot, designating the port they should bind to, more details in quick start guide.
