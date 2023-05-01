@@ -79,7 +79,7 @@ port with the following mapping:
 Step 2: Set max current for gripper motors
 - Open Dynamixel Wizard, and select the wrist motor for puppet arms. The name of it should be ```[ID:009] XM430-W350```
 - Tip: the LED on the base of robot will flash when it is talking to Dynamixel Wizard. This will help determine which robot is selected. 
-- Find ``38 Current Limit``, enter ``500``, then hit ``save`` at the bottom.
+- Find ``38 Current Limit``, enter ``300``, then hit ``save`` at the bottom.
 - Repeat this for both puppet robots.
 - This limits the max current through gripper motors, to prevent overloading errors.
 
