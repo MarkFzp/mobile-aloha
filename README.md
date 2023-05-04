@@ -3,6 +3,7 @@
 #### Project Website: https://tonyzhaozh.github.io/aloha/
 
 This codebase contains implementation for teleoperation and data collection with the ALOHA hardware.
+To build ALOHA, follow the [Hardware Assembly Tutorial](https://docs.google.com/document/d/1sgRZmpS7HMcZTPfGy3kAxDrqFMtNNzmK-yVtX5cKYME/edit?usp=sharing) and the quick start guide below.
 To train imitation learning algorithms, you would also need to install [ACT](https://github.com/tonyzhaozh/act).
 
 ### Repo Structure
