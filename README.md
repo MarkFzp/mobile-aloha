@@ -127,7 +127,6 @@ these devices.
     pip install einops
     pip install packaging
     pip install h5py
-    pip install h5py_cache
 
 ### Testing teleoperation
 

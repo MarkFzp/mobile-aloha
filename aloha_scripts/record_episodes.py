@@ -2,7 +2,6 @@ import os
 import time
 import h5py
 import argparse
-import h5py_cache
 import numpy as np
 from tqdm import tqdm
 
@@ -149,9 +148,7 @@ def capture_one_episode(dt, max_timesteps, camera_names, dataset_dir, dataset_na
 
     # HDF5
     t0 = time.time()
-    # import h5py_cache
-    with h5py_cache.File(dataset_path + '.hdf5', 'w', chunk_cache_mem_size=1024**2*2) as root:
-    # with h5py.File(dataset_path + '.hdf5', 'w') as root:
+    with h5py.File(dataset_path + '.hdf5', 'w', rdcc_nbytes=1024**2*2) as root:
         root.attrs['sim'] = False
         obs = root.create_group('observations')
         image = obs.create_group('images')
