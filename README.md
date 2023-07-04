@@ -112,7 +112,7 @@ these devices.
 
 ### Software installation - Conda:
 
-    conda create -n aloha python=3.8
+    conda create -n aloha python=3.8.10
     conda activate aloha
     pip install torchvision
     pip install torch
