@@ -104,8 +104,6 @@ def capture_one_episode(dt, max_timesteps, camera_names, dataset_dir, dataset_na
     torque_on(master_bot_left)
     torque_on(master_bot_right)
     # Open puppet grippers
-    env.puppet_bot_left.dxl.robot_set_operating_modes("single", "gripper", "position")
-    env.puppet_bot_right.dxl.robot_set_operating_modes("single", "gripper", "position")
     move_grippers([env.puppet_bot_left, env.puppet_bot_right], [PUPPET_GRIPPER_JOINT_OPEN] * 2, move_time=0.5)
 
     freq_mean = print_dt_diagnosis(actual_dt_history)
