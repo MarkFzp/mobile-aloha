@@ -17,7 +17,7 @@ To train imitation learning algorithms, you would also need to install [ACT](htt
 
 We suggest using a "heavy-duty" computer if possible. 
 
-*In particular, at least 4 USB3 ports are needed.* We have seen in one case that a machine was not able to stably connect to all 4 robot arms simultaneously over USB.
+*In particular, at least 6 USB3 ports are needed. 4 ports for robot connections and 2 ports for cameras.* We have seen cases that a machine was not able to stably connect to all 4 robot arms simultaneously over USB, especially when USB hubs are used.
 
 ### Software selection -- OS:
 
@@ -43,7 +43,7 @@ Ongoing testing (compatibility effort underway):
 The goal of this section is to run ``roslaunch aloha 4arms_teleop.launch``, which starts
 communication with 4 robots and 4 cameras. It should work after finishing the following steps:
 
-Step 1: Connect 4 robots to the computer via USB, and power on. Do not use extension cable or usb hub.
+Step 1: Connect 4 robots to the computer via USB, and power on. *Do not use extension cable or usb hub*.
 - To check if the robot is connected, install dynamixel wizard [here](https://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_wizard2/)
 - Dynamixel wizard is a very helpful debugging tool that connects to individual motors of the robot. It allows
 things such as rebooting the motor (very useful!), torque on/off, and sending commands.
@@ -86,7 +86,7 @@ Step 2: Set max current for gripper motors
 
 
 Step 3: Setup 4 cameras
-- You may use usb hub here, but maximum 2 cameras per hub for reasonable latency.
+- You may use usb hub here, but *maximum 2 cameras per hub for reasonable latency*.
 - To make sure all 4 cameras are binding to a consistent port, similar steps are needed.
 - Cameras are by default binding to ``/dev/video{0, 1, 2...}``, while we want to have symlinks ``{CAM_RIGHT_WRIST, CAM_LEFT_WRIST, CAM_LOW, CAM_HIGH}``
 - Take ``CAM_RIGHT_WRIST`` as an example, and let's say it is now binding to ``/dev/video0``. run ``udevadm info --name=/dev/video0 --attribute-walk | grep serial`` to obtain it's serial. Use the first one that shows up, the format should look similar to ``0E1A2B2F``.
