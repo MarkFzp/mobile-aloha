@@ -14,7 +14,7 @@ class ImageRecorder:
         from sensor_msgs.msg import Image
         self.is_debug = is_debug
         self.bridge = CvBridge()
-        self.camera_names = ['cam_high', 'cam_low', 'cam_left_wrist', 'cam_right_wrist']
+        self.camera_names = ['cam_high', 'cam_left_wrist', 'cam_right_wrist'] #['cam_high', 'cam_low', 'cam_left_wrist', 'cam_right_wrist']
         if init_node:
             rospy.init_node('image_recorder', anonymous=True)
         for cam_name in self.camera_names:

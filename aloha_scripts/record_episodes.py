@@ -51,7 +51,7 @@ def opening_ceremony(master_bot_left, master_bot_right, puppet_bot_left, puppet_
     master_bot_left.dxl.robot_torque_enable("single", "gripper", False)
     master_bot_right.dxl.robot_torque_enable("single", "gripper", False)
     print(f'Close the gripper to start')
-    close_thresh = -0.3
+    close_thresh = -1.4
     pressed = False
     while not pressed:
         gripper_pos_left = get_arm_gripper_positions(master_bot_left)
@@ -128,8 +128,9 @@ def capture_one_episode(dt, max_timesteps, camera_names, dataset_dir, dataset_na
         '/observations/qpos': [],
         '/observations/qvel': [],
         '/observations/effort': [],
+        '/observations/base_vel': [],
         '/action': [],
-        '/base_vel': [],
+        '/base_action': [],
     }
     for cam_name in camera_names:
         data_dict[f'/observations/images/{cam_name}'] = []
@@ -141,8 +142,9 @@ def capture_one_episode(dt, max_timesteps, camera_names, dataset_dir, dataset_na
         data_dict['/observations/qpos'].append(ts.observation['qpos'])
         data_dict['/observations/qvel'].append(ts.observation['qvel'])
         data_dict['/observations/effort'].append(ts.observation['effort'])
+        data_dict['/observations/base_vel'].append(ts.observation['base_vel'])
         data_dict['/action'].append(action)
-        data_dict['/base_vel'].append(ts.observation['base_vel'])
+        data_dict['/base_action'].append(ts.observation['base_vel'])
         for cam_name in camera_names:
             data_dict[f'/observations/images/{cam_name}'].append(ts.observation['images'][cam_name])
 
@@ -225,7 +227,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--task_name', action='store', type=str, help='Task name.', required=True)
     parser.add_argument('--episode_idx', action='store', type=int, help='Episode index.', default=None, required=False)
-    main(vars(parser.parse_args()))
+    main(vars(parser.parse_args())) # TODO
     # debug()
 
 
