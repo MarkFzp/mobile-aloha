@@ -12,6 +12,7 @@ from robot_utils import setup_master_bot, setup_puppet_bot, move_arms, move_grip
 from interbotix_xs_modules.arm import InterbotixManipulatorXS
 from interbotix_xs_msgs.msg import JointSingleCommand
 import pyrealsense2 as rs
+import pyagxrobots
 
 import IPython
 e = IPython.embed
@@ -47,6 +48,7 @@ class RealEnv:
             self.setup_robots()
         
         self.setup_t265()
+        self.setup_base()
 
         self.recorder_left = Recorder('left', init_node=False)
         self.recorder_right = Recorder('right', init_node=False)
@@ -59,6 +61,10 @@ class RealEnv:
         # if only pose stream is enabled, fps is higher (202 vs 30)
         cfg.enable_stream(rs.stream.pose)
         self.pipeline.start(cfg)
+    
+    def setup_base(self):
+        tracer = pyagxrobots.pysdkugv.TracerBase()
+        tracer.EnableCAN()
 
     def setup_robots(self):
         setup_puppet_bot(self.puppet_bot_left)
@@ -143,13 +149,15 @@ class RealEnv:
             discount=None,
             observation=self.get_observation())
 
-    def step(self, action):
+    def step(self, action, base_action=None):
         state_len = int(len(action) / 2)
         left_action = action[:state_len]
         right_action = action[state_len:]
         self.puppet_bot_left.arm.set_joint_positions(left_action[:6], blocking=False)
         self.puppet_bot_right.arm.set_joint_positions(right_action[:6], blocking=False)
         self.set_gripper_pose(left_action[-1], right_action[-1])
+        if base_action:
+            self.tracer.SetMotionCommand(linear_vel=base_action[0], angular_vel=base_action[1])
         time.sleep(DT)
         return dm_env.TimeStep(
             step_type=dm_env.StepType.MID,
