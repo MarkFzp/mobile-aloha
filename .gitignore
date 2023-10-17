@@ -2,3 +2,6 @@
 .DS_store
 /aloha.egg-info/
 /aloha_scripts/.idea/
+*.png
+log*
+__pycache__/

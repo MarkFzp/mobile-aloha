@@ -11,6 +11,7 @@ from robot_utils import Recorder, ImageRecorder
 from robot_utils import setup_master_bot, setup_puppet_bot, move_arms, move_grippers
 from interbotix_xs_modules.arm import InterbotixManipulatorXS
 from interbotix_xs_msgs.msg import JointSingleCommand
+import pyrealsense2 as rs
 
 import IPython
 e = IPython.embed
@@ -44,11 +45,20 @@ class RealEnv:
                                                         robot_name=f'puppet_right', init_node=False)
         if setup_robots:
             self.setup_robots()
+        
+        self.setup_t265()
 
         self.recorder_left = Recorder('left', init_node=False)
         self.recorder_right = Recorder('right', init_node=False)
         self.image_recorder = ImageRecorder(init_node=False)
         self.gripper_command = JointSingleCommand(name="gripper")
+    
+    def setup_t265(self):
+        self.pipeline = rs.pipeline()
+        cfg = rs.config()
+        # if only pose stream is enabled, fps is higher (202 vs 30)
+        cfg.enable_stream(rs.stream.pose)
+        self.pipeline.start(cfg)
 
     def setup_robots(self):
         setup_puppet_bot(self.puppet_bot_left)
@@ -82,6 +92,14 @@ class RealEnv:
     def get_images(self):
         return self.image_recorder.get_images()
 
+    def get_base_vel(self):
+        frames = self.pipeline.wait_for_frames()
+        pose_frame = frames.get_pose_frame()
+        pose = pose_frame.get_pose_data()
+        base_linear_vel = pose.velocity.z
+        base_angular_vel = pose.angular_velocity.y
+        return np.array([base_linear_vel, base_angular_vel])
+
     def set_gripper_pose(self, left_gripper_desired_pos_normalized, right_gripper_desired_pos_normalized):
         left_gripper_desired_joint = PUPPET_GRIPPER_JOINT_UNNORMALIZE_FN(left_gripper_desired_pos_normalized)
         self.gripper_command.cmd = left_gripper_desired_joint
@@ -106,6 +124,7 @@ class RealEnv:
         obs['qvel'] = self.get_qvel()
         obs['effort'] = self.get_effort()
         obs['images'] = self.get_images()
+        obs['base_vel'] = self.get_base_vel()
         return obs
 
     def get_reward(self):
