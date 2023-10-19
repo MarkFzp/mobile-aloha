@@ -7,6 +7,12 @@ import pyrealsense2 as rs
 from pyquaternion import Quaternion
 import numpy as np
 from simple_pid import PID
+import argparse
+np.set_printoptions(precision=3, suppress=True)
+
+argparser = argparse.ArgumentParser()
+argparser.add_argument('--debug', action='store_true')
+args = argparser.parse_args()
 
 # setup base
 tracer = pyagxrobots.pysdkugv.TracerBase()
@@ -23,7 +29,7 @@ def get_pose():
     frames = pipeline.wait_for_frames()
     pose_frame = frames.get_pose_frame()
     pose = pose_frame.get_pose_data()
-    yaw = Quaternion(pose.rotation.w, pose.rotation.x, pose.rotation.y, pose.rotation.z).yaw_pitch_roll[0]
+    yaw = -1 * Quaternion(pose.rotation.w, pose.rotation.x, pose.rotation.y, pose.rotation.z).yaw_pitch_roll[0]
     pose_np = np.array([pose.translation.z, pose.translation.x, yaw])
 
     return pose_np
@@ -42,7 +48,7 @@ class PIDController:
         self.prev_error = error
         return output
 
-def normalize_angle(self, angle):
+def normalize_angle(angle):
     while angle > np.pi:
         angle -= 2 * np.pi
     while angle < -np.pi:
@@ -52,8 +58,8 @@ def normalize_angle(self, angle):
 # init global coords
 start_pose = get_pose()
 delta_target_pose_l = [
-    np.array([0, 0.5, 0]),
-    np.array([0, 0.5, np.pi / 4]),
+    np.array([0.5, 0, 0]),
+    np.array([0.5, 0, np.pi / 4]),
 ]
 target_pose_l = []
 for delta_target in delta_target_pose_l:
@@ -66,7 +72,7 @@ MIN_LINEAR_VEL = -0.1
 MAX_ANGULAR_VEL = 0.5
 MIN_ANGULAR_VEL = -0.5
 POS_THRESHOLD = 0.03
-ORN_THRESHOLD = 0.03
+ORN_THRESHOLD = 0.1
 
 for target_pose in target_pose_l:
     target_pos = target_pose[:2]
@@ -86,7 +92,7 @@ for target_pose in target_pose_l:
         error_orn = normalize_angle(target_orn - curr_orn)
 
         # blend between heading and orientation error
-        blend_factor = min(1, distance_to_target / (POS_THRESHOLD * 2))
+        blend_factor = min(1, distance_to_target / (POS_THRESHOLD * 3))
         error = blend_factor * error_heading + (1 - blend_factor) * error_orn
 
         # compute angular velocity
@@ -97,16 +103,30 @@ for target_pose in target_pose_l:
         action_linear_vel = 0.5 * distance_to_target * np.cos(error_heading)
         action_linear_vel = np.clip(action_linear_vel, MIN_LINEAR_VEL, MAX_LINEAR_VEL)
 
-        # set motion command
-        tracer.SetMotionCommand(
-            linear_vel=action_linear_vel,
-            angular_vel=action_angular_vel
-        )
+        if args.debug:
+            time.sleep(1)
+            tracer.SetMotionCommand(
+                linear_vel=0,
+                angular_vel=0.1
+            )
+        else:
+            # set motion command
+            tracer.SetMotionCommand(
+                linear_vel=action_linear_vel,
+                angular_vel=action_angular_vel
+            )
 
-        time.sleep(0.05)
+            time.sleep(0.05)
 
-        print(f'curr_pose: {curr_pose},
-              target_pose: {target_pose},
-              action: {action_linear_vel, action_angular_vel}')
+        print(f'''
+            curr_pose: {curr_pose},
+            target_pose: {target_pose},
+            action: {np.array([action_linear_vel, action_angular_vel])}
+            error: {np.array(error)},
+            error_heading: {np.array(error_heading)},
+            error_orn: {np.array(error_orn)},
+            blend_factor: {np.array(blend_factor)}
+            --------------------------
+        ''')
 
 print('End!')
