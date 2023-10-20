@@ -25,6 +25,9 @@ cfg = rs.config()
 cfg.enable_stream(rs.stream.pose)
 pipeline.start(cfg)
 
+def yaw_to_vector(yaw):
+    return np.array([np.cos(yaw), np.sin(yaw)])
+
 def get_pose():
     frames = pipeline.wait_for_frames()
     pose_frame = frames.get_pose_frame()
@@ -56,24 +59,35 @@ def normalize_angle(angle):
     return angle
 
 # init global coords
+r = 0.2
 start_pose = get_pose()
 delta_target_pose_l = [
-    np.array([0.5, 0, 0]),
-    np.array([0.5, 0, np.pi / 4]),
+    np.array([
+        r * np.sin(theta), 
+        -(r - r * np.cos(theta)), 
+        -theta]) for theta in np.linspace(0, np.pi / 2, int((np.pi / 2) // (0.01 / r)))
 ]
 target_pose_l = []
-for delta_target in delta_target_pose_l:
-    target_pose_l.append(start_pose + delta_target)
+for delta_target_pose in delta_target_pose_l:
+    transformed_delta_target_pose_x = delta_target_pose[0] * np.cos(start_pose[2]) - delta_target_pose[1] * np.sin(start_pose[2])
+    transformed_delta_target_pose_y = delta_target_pose[0] * np.sin(start_pose[2]) + delta_target_pose[1] * np.cos(start_pose[2])
+    transformed_target_pose = np.array([
+        start_pose[0] + transformed_delta_target_pose_x,
+        start_pose[1] + transformed_delta_target_pose_y,
+        normalize_angle(start_pose[2] + delta_target_pose[2])
+    ])
+    target_pose_l.append(transformed_target_pose)
 
-orn_controller = PIDController(kp=1.0, ki=0, kd=0.05)
 
 MAX_LINEAR_VEL = 0.1
 MIN_LINEAR_VEL = -0.1
-MAX_ANGULAR_VEL = 0.5
-MIN_ANGULAR_VEL = -0.5
-POS_THRESHOLD = 0.03
+MAX_ANGULAR_VEL = 0.3
+MIN_ANGULAR_VEL = -0.3
+POS_THRESHOLD = 0.05
 ORN_THRESHOLD = 0.1
+DT = 0.1
 
+print(target_pose_l)
 for target_pose in target_pose_l:
     target_pos = target_pose[:2]
     target_orn = target_pose[2]
@@ -82,51 +96,52 @@ for target_pose in target_pose_l:
         curr_pose = get_pose()
         curr_pos, curr_orn = curr_pose[:2], curr_pose[2]
 
-        distance_to_target = np.linalg.norm(target_pos - curr_pos)
+        distance_to_target = np.linalg.norm(target_pos - curr_pos) 
         error_orn = normalize_angle(target_orn - curr_orn)
         if distance_to_target < POS_THRESHOLD and abs(error_orn) < ORN_THRESHOLD:
             break
         
         target_heading = np.arctan2(target_pos[1] - curr_pos[1], target_pos[0] - curr_pos[0])
         error_heading = normalize_angle(target_heading - curr_orn)
-        error_orn = normalize_angle(target_orn - curr_orn)
 
-        # blend between heading and orientation error
-        blend_factor = min(1, distance_to_target / (POS_THRESHOLD * 3))
-        error = blend_factor * error_heading + (1 - blend_factor) * error_orn
-
-        # compute angular velocity
-        action_angular_vel = orn_controller.compute(error)
-        action_angular_vel = np.clip(action_angular_vel, MIN_ANGULAR_VEL, MAX_ANGULAR_VEL)
-
-        # compute linear velocity
-        action_linear_vel = 0.5 * distance_to_target * np.cos(error_heading)
-        action_linear_vel = np.clip(action_linear_vel, MIN_LINEAR_VEL, MAX_LINEAR_VEL)
-
-        if args.debug:
-            time.sleep(1)
-            tracer.SetMotionCommand(
-                linear_vel=0,
-                angular_vel=0.1
-            )
+        if distance_to_target < POS_THRESHOLD:
+            is_forward = 1
+            v = 0
+            w = error_orn / DT
         else:
-            # set motion command
-            tracer.SetMotionCommand(
-                linear_vel=action_linear_vel,
-                angular_vel=action_angular_vel
-            )
+            is_forward = np.sign(np.dot(
+                yaw_to_vector(target_heading), yaw_to_vector(curr_orn)))
+            v = distance_to_target * is_forward / DT
+            w = error_heading * is_forward / DT
 
-            time.sleep(0.05)
+        v = np.clip(v, MIN_LINEAR_VEL, MAX_LINEAR_VEL)
+        w = np.clip(w, MIN_ANGULAR_VEL, MAX_ANGULAR_VEL)
 
         print(f'''
             curr_pose: {curr_pose},
             target_pose: {target_pose},
-            action: {np.array([action_linear_vel, action_angular_vel])}
-            error: {np.array(error)},
-            error_heading: {np.array(error_heading)},
-            error_orn: {np.array(error_orn)},
-            blend_factor: {np.array(blend_factor)}
+            is_forward: {is_forward},
+            action: {np.array([v, w])},
+            error_heading: {error_heading:0.3f},
+            error_orn: {error_orn:0.3f},
+            distance: {distance_to_target:0.3f}
             --------------------------
         ''')
+
+        if args.debug:
+            tracer.SetMotionCommand(
+                linear_vel=0,
+                angular_vel=0.1
+            )
+            time.sleep(1)
+        else:
+            # set motion command
+            tracer.SetMotionCommand(
+                linear_vel=v,
+                angular_vel=w
+            )
+            time.sleep(0.05)
+
+
 
 print('End!')
