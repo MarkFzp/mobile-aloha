@@ -1,6 +1,6 @@
 ### Task parameters
 
-DATA_DIR = '/home/zfu/interbotix_ws/src/aloha/aloha_scripts/data'
+DATA_DIR = '~/interbotix_ws/src/aloha/aloha_scripts/data'
 TASK_CONFIGS = {
     'aloha_wear_shoe':{
         'dataset_dir': DATA_DIR + '/aloha_wear_shoe',
@@ -8,10 +8,10 @@ TASK_CONFIGS = {
         'episode_len': 1000,
         'camera_names': ['cam_high', 'cam_low', 'cam_left_wrist', 'cam_right_wrist']
     },
-    'aloha_mobile':{
-        'dataset_dir': DATA_DIR + '/aloha_mobile',
+    'aloha_mobile_grasp_pen':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_grasp_pen',
         'num_episodes': 50,
-        'episode_len': 1000,
+        'episode_len': 500,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
 }
