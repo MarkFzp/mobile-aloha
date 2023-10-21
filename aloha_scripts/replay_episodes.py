@@ -22,11 +22,11 @@ def main(args):
 
     with h5py.File(dataset_path, 'r') as root:
         actions = root['/action'][()]
-        base_action = root['/action_base'][()]
+        base_actions = root['/base_action'][()]
 
-    env = make_real_env(init_node=True)
+    env = make_real_env(init_node=True, setup_base=True)
     env.reset()
-    for action in actions:
+    for action, base_action in zip(actions, base_actions):
         env.step(action, base_action)
 
     move_grippers([env.puppet_bot_left, env.puppet_bot_right], [PUPPET_GRIPPER_JOINT_OPEN] * 2, move_time=0.5)  # open

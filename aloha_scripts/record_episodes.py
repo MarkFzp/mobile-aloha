@@ -128,7 +128,6 @@ def capture_one_episode(dt, max_timesteps, camera_names, dataset_dir, dataset_na
         '/observations/qpos': [],
         '/observations/qvel': [],
         '/observations/effort': [],
-        '/observations/base_vel': [],
         '/action': [],
         '/base_action': [],
     }
@@ -142,7 +141,6 @@ def capture_one_episode(dt, max_timesteps, camera_names, dataset_dir, dataset_na
         data_dict['/observations/qpos'].append(ts.observation['qpos'])
         data_dict['/observations/qvel'].append(ts.observation['qvel'])
         data_dict['/observations/effort'].append(ts.observation['effort'])
-        data_dict['/observations/base_vel'].append(ts.observation['base_vel'])
         data_dict['/action'].append(action)
         data_dict['/base_action'].append(ts.observation['base_vel'])
         for cam_name in camera_names:
@@ -163,7 +161,7 @@ def capture_one_episode(dt, max_timesteps, camera_names, dataset_dir, dataset_na
         _ = obs.create_dataset('qvel', (max_timesteps, 14))
         _ = obs.create_dataset('effort', (max_timesteps, 14))
         _ = root.create_dataset('action', (max_timesteps, 14))
-        _ = root.create_dataset('base_vel', (max_timesteps, 2))
+        _ = root.create_dataset('base_action', (max_timesteps, 2))
 
         for name, array in data_dict.items():
             root[name][...] = array
