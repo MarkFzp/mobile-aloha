@@ -1,6 +1,7 @@
 ### Task parameters
+import os
 
-DATA_DIR = '~/interbotix_ws/src/aloha/aloha_scripts/data'
+DATA_DIR = os.path.expanduser('~/data')
 TASK_CONFIGS = {
     'aloha_wear_shoe':{
         'dataset_dir': DATA_DIR + '/aloha_wear_shoe',

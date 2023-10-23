@@ -163,7 +163,6 @@ class RealEnv:
             angular_vel_limit = 0.5
             base_action_linear = np.clip(base_action[0], -linear_vel_limit, linear_vel_limit)
             base_action_angular = np.clip(base_action[1], -angular_vel_limit, angular_vel_limit)
-            print(f'base_action: {base_action}')
             self.tracer.SetMotionCommand(linear_vel=base_action_linear, angular_vel=base_action_angular)
         time.sleep(DT)
         return dm_env.TimeStep(
