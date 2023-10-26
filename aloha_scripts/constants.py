@@ -21,7 +21,6 @@ TASK_CONFIGS = {
         'episode_len': 500,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
-
 }
 
 ### ALOHA fixed constants
