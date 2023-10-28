@@ -122,6 +122,7 @@ def capture_one_episode(dt, max_timesteps, camera_names, dataset_dir, dataset_na
     - qvel                  (14,)         'float64'
     
     action                  (14,)         'float64'
+    base_action             (2,)          'float64'
     """
 
     data_dict = {
