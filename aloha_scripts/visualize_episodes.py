@@ -24,7 +24,10 @@ def load_hdf5(dataset_dir, dataset_name):
         is_sim = root.attrs['sim']
         qpos = root['/observations/qpos'][()]
         qvel = root['/observations/qvel'][()]
-        effort = root['/observations/effort'][()]
+        if 'effort' in root.keys():
+            effort = root['/observations/effort'][()]
+        else:
+            effort = None
         action = root['/action'][()]
         base_action = root['/base_action'][()]
         image_dict = dict()
@@ -36,7 +39,11 @@ def load_hdf5(dataset_dir, dataset_name):
 def main(args):
     dataset_dir = args['dataset_dir']
     episode_idx = args['episode_idx']
-    dataset_name = f'episode_{episode_idx}'
+    ismirror = args['ismirror']
+    if ismirror:
+        dataset_name = f'mirror_episode_{episode_idx}'
+    else:
+        dataset_name = f'episode_{episode_idx}'
 
     qpos, qvel, effort, action, base_action, image_dict = load_hdf5(dataset_dir, dataset_name)
     save_videos(image_dict, DT, video_path=os.path.join(dataset_dir, dataset_name + '_video.mp4'))
@@ -203,4 +210,5 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset_dir', action='store', type=str, help='Dataset dir.', required=True)
     parser.add_argument('--episode_idx', action='store', type=int, help='Episode index.', required=False)
+    parser.add_argument('--ismirror', action='store_true')
     main(vars(parser.parse_args()))
