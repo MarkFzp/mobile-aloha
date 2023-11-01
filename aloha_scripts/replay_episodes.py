@@ -1,6 +1,6 @@
 import os
 import h5py
-from robot_utils import move_grippers
+from robot_utils import move_grippers, calibrate_linear_vel, smooth_base_action
 import argparse
 from real_env import make_real_env
 from constants import JOINT_NAMES, PUPPET_GRIPPER_JOINT_OPEN
@@ -26,7 +26,9 @@ def main(args):
 
     env = make_real_env(init_node=True, setup_base=True)
     env.reset()
+    # base_actions = smooth_base_action(base_actions)
     for action, base_action in zip(actions, base_actions):
+        # base_action = calibrate_linear_vel(base_action, c=0)
         env.step(action, base_action)
 
     move_grippers([env.puppet_bot_left, env.puppet_bot_right], [PUPPET_GRIPPER_JOINT_OPEN] * 2, move_time=0.5)  # open

@@ -21,6 +21,24 @@ TASK_CONFIGS = {
         'episode_len': 500,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
+    'aloha_mobile_object_to_cabinet':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_object_to_cabinet',
+        'num_episodes': 50,
+        'episode_len': 1700,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_glass_to_cabinet':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_glass_to_cabinet',
+        'num_episodes': 50,
+        'episode_len': 1500,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_wipe_wine':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_wipe_wine',
+        'num_episodes': 50,
+        'episode_len': 1300,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
 }
 
 ### ALOHA fixed constants

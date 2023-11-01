@@ -185,3 +185,17 @@ def torque_off(bot):
 def torque_on(bot):
     bot.dxl.robot_torque_enable("group", "arm", True)
     bot.dxl.robot_torque_enable("single", "gripper", True)
+
+def calibrate_linear_vel(base_action, c=None):
+    if c is None:
+        c = 0.19
+    v = base_action[..., 0]
+    w = base_action[..., 1]
+    base_action = base_action.copy()
+    base_action[..., 0] = v - c * w
+    return base_action
+
+def smooth_base_action(base_action):
+    return np.stack([
+        np.convolve(base_action[:, i], np.ones(20)/20, mode='same') for i in range(base_action.shape[1])
+    ], axis=-1).astype(np.float32)
