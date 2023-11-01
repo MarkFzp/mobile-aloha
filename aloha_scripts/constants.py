@@ -21,6 +21,12 @@ TASK_CONFIGS = {
         'episode_len': 500,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
+    'aloha_mobile_grasp_pen_all':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_grasp_pen_all',
+        'num_episodes': 100,
+        'episode_len': 500,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
     'aloha_mobile_object_to_cabinet':{
         'dataset_dir': DATA_DIR + '/aloha_mobile_object_to_cabinet',
         'num_episodes': 50,
