@@ -38,6 +38,12 @@ TASK_CONFIGS = {
         'num_episodes': None,
         'episode_len': 1500,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_wipe_wine':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_wipe_wine',
+        'num_episodes': None,
+        'episode_len': 1300,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     }
 }
 
