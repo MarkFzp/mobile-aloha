@@ -17,15 +17,15 @@ def main():
     for bot in all_bots:
         torque_on(bot)
     
-    puppet_sleep_position = (0, -1.7, 1.55, 0.12, 0.65, 0)
+    puppet_sleep_position = (0, -1.7, 1.55, 0, 0.65, 0)
     master_sleep_left_position = (-0.61, 0., 0.43, 0., 1.04, -0.65)
     master_sleep_right_position = (0.61, 0., 0.43, 0., 1.04, 0.65)
     all_positions = [puppet_sleep_position] * 2 + [master_sleep_left_position, master_sleep_right_position] if args.all else [puppet_sleep_position] * 2
     move_arms(all_bots, all_positions, move_time=2)
 
     if args.all:
-        master_sleep_left_position_2 = (0., 0.66, -0.27, -0.055, 1.1, 0)
-        master_sleep_right_position_2 = (0., 0.66, -0.27, -0.055, 1.1, 0)
+        master_sleep_left_position_2 = (0., 0.66, -0.27, -0.0, 1.1, 0)
+        master_sleep_right_position_2 = (0., 0.66, -0.27, -0.0, 1.1, 0)
         move_arms(master_bots, [master_sleep_left_position_2, master_sleep_right_position_2], move_time=1)
 
 
