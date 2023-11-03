@@ -188,7 +188,7 @@ def torque_on(bot):
 
 def calibrate_linear_vel(base_action, c=None):
     if c is None:
-        c = 0.19
+        c = 0.
     v = base_action[..., 0]
     w = base_action[..., 1]
     base_action = base_action.copy()
@@ -197,5 +197,10 @@ def calibrate_linear_vel(base_action, c=None):
 
 def smooth_base_action(base_action):
     return np.stack([
-        np.convolve(base_action[:, i], np.ones(20)/20, mode='same') for i in range(base_action.shape[1])
+        np.convolve(base_action[:, i], np.ones(5)/5, mode='same') for i in range(base_action.shape[1])
     ], axis=-1).astype(np.float32)
+
+def postprocess_base_action(base_action):
+    linear_vel, angular_vel = base_action
+    angular_vel *= 0.9
+    return np.array([linear_vel, angular_vel])

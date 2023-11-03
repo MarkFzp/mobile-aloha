@@ -3,6 +3,7 @@ import numpy as np
 import collections
 import matplotlib.pyplot as plt
 import dm_env
+from pyquaternion import Quaternion
 
 from constants import DT, START_ARM_POSE, MASTER_GRIPPER_JOINT_NORMALIZE_FN, PUPPET_GRIPPER_JOINT_UNNORMALIZE_FN
 from constants import PUPPET_GRIPPER_POSITION_NORMALIZE_FN, PUPPET_GRIPPER_VELOCITY_NORMALIZE_FN
@@ -104,7 +105,14 @@ class RealEnv:
         frames = self.pipeline.wait_for_frames()
         pose_frame = frames.get_pose_frame()
         pose = pose_frame.get_pose_data()
-        base_linear_vel = pose.velocity.z
+        
+        q1 = Quaternion(w=pose.rotation.w, x=pose.rotation.x, y=pose.rotation.y, z=pose.rotation.z)
+        rotation = -np.array(q1.yaw_pitch_roll)[0]
+        rotation_vec = np.array([np.cos(rotation), np.sin(rotation)])
+        linear_vel_vec = np.array([pose.velocity.z, pose.velocity.x])
+        is_forward = rotation_vec.dot(linear_vel_vec) > 0
+
+        base_linear_vel = np.sqrt(pose.velocity.z ** 2 + pose.velocity.x ** 2) * (1 if is_forward else -1)
         base_angular_vel = pose.angular_velocity.y
         return np.array([base_linear_vel, base_angular_vel])
 
@@ -170,7 +178,6 @@ class RealEnv:
             reward=self.get_reward(),
             discount=None,
             observation=self.get_observation())
-
 
 def get_action(master_bot_left, master_bot_right):
     action = np.zeros(14) # 6 joint + 1 gripper, for two arms
