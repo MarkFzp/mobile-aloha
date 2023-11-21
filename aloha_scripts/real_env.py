@@ -14,6 +14,7 @@ from interbotix_xs_modules.arm import InterbotixManipulatorXS
 from interbotix_xs_msgs.msg import JointSingleCommand
 import pyrealsense2 as rs
 import pyagxrobots
+from dynamixel_client import DynamixelClient
 
 import IPython
 e = IPython.embed
@@ -52,6 +53,7 @@ class RealEnv:
             self.setup_base()
         
         self.setup_t265()
+        self.setup_dxl()
 
         self.recorder_left = Recorder('left', init_node=False)
         self.recorder_right = Recorder('right', init_node=False)
@@ -64,6 +66,11 @@ class RealEnv:
         # if only pose stream is enabled, fps is higher (202 vs 30)
         cfg.enable_stream(rs.stream.pose)
         self.pipeline.start(cfg)
+    
+    def setup_dxl(self):
+        self.dxl_client = DynamixelClient([1, 2], port='/dev/ttyDXL_wheels', lazy_connect=True)
+        self.wheel_r = 0.101 / 2  # 101 mm is the diameter
+        self.base_r = 0.622  # 622 mm is the distance between the two wheels
     
     def setup_base(self):
         self.tracer = pyagxrobots.pysdkugv.TracerBase()
@@ -101,7 +108,7 @@ class RealEnv:
     def get_images(self):
         return self.image_recorder.get_images()
 
-    def get_base_vel(self):
+    def get_base_vel_t265(self):
         frames = self.pipeline.wait_for_frames()
         pose_frame = frames.get_pose_frame()
         pose = pose_frame.get_pose_data()
@@ -115,6 +122,19 @@ class RealEnv:
         base_linear_vel = np.sqrt(pose.velocity.z ** 2 + pose.velocity.x ** 2) * (1 if is_forward else -1)
         base_angular_vel = pose.angular_velocity.y
         return np.array([base_linear_vel, base_angular_vel])
+
+    def get_base_vel(self):
+        left_vel, right_vel = self.dxl_client.read_pos_vel_cur()[1]
+        right_vel = -right_vel # right wheel is inverted
+        base_linear_vel = (left_vel + right_vel) * self.wheel_r / 2
+        base_angular_vel = (right_vel - left_vel) * self.wheel_r / self.base_r
+
+        return np.array([base_linear_vel, base_angular_vel])
+
+    def get_tracer_vel(self):
+        linear_vel, angular_vel = self.tracer.GetLinearVelocity(), self.tracer.GetAngularVelocity()
+        return np.array([linear_vel, angular_vel])
+
 
     def set_gripper_pose(self, left_gripper_desired_pos_normalized, right_gripper_desired_pos_normalized):
         left_gripper_desired_joint = PUPPET_GRIPPER_JOINT_UNNORMALIZE_FN(left_gripper_desired_pos_normalized)
@@ -134,13 +154,16 @@ class RealEnv:
         move_grippers([self.puppet_bot_left, self.puppet_bot_right], [PUPPET_GRIPPER_JOINT_OPEN] * 2, move_time=0.5)
         move_grippers([self.puppet_bot_left, self.puppet_bot_right], [PUPPET_GRIPPER_JOINT_CLOSE] * 2, move_time=1)
 
-    def get_observation(self):
+    def get_observation(self, get_tracer_vel=False):
         obs = collections.OrderedDict()
         obs['qpos'] = self.get_qpos()
         obs['qvel'] = self.get_qvel()
         obs['effort'] = self.get_effort()
         obs['images'] = self.get_images()
+        obs['base_vel_t265'] = self.get_base_vel_t265()
         obs['base_vel'] = self.get_base_vel()
+        if get_tracer_vel:
+            obs['tracer_vel'] = self.get_tracer_vel()
         return obs
 
     def get_reward(self):
@@ -159,7 +182,7 @@ class RealEnv:
             discount=None,
             observation=self.get_observation())
 
-    def step(self, action, base_action=None):
+    def step(self, action, base_action=None, get_tracer_vel=False):
         state_len = int(len(action) / 2)
         left_action = action[:state_len]
         right_action = action[state_len:]
@@ -167,17 +190,18 @@ class RealEnv:
         self.puppet_bot_right.arm.set_joint_positions(right_action[:6], blocking=False)
         self.set_gripper_pose(left_action[-1], right_action[-1])
         if base_action is not None:
-            linear_vel_limit = 0.5
-            angular_vel_limit = 0.5
-            base_action_linear = np.clip(base_action[0], -linear_vel_limit, linear_vel_limit)
-            base_action_angular = np.clip(base_action[1], -angular_vel_limit, angular_vel_limit)
+            # linear_vel_limit = 1.5
+            # angular_vel_limit = 1.5
+            # base_action_linear = np.clip(base_action[0], -linear_vel_limit, linear_vel_limit)
+            # base_action_angular = np.clip(base_action[1], -angular_vel_limit, angular_vel_limit)
+            base_action_linear, base_action_angular = base_action
             self.tracer.SetMotionCommand(linear_vel=base_action_linear, angular_vel=base_action_angular)
         time.sleep(DT)
         return dm_env.TimeStep(
             step_type=dm_env.StepType.MID,
             reward=self.get_reward(),
             discount=None,
-            observation=self.get_observation())
+            observation=self.get_observation(get_tracer_vel))
 
 def get_action(master_bot_left, master_bot_right):
     action = np.zeros(14) # 6 joint + 1 gripper, for two arms

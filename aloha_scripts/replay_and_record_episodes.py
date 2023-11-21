@@ -12,12 +12,41 @@ e = IPython.embed
 
 STATE_NAMES = JOINT_NAMES + ["gripper", 'left_finger', 'right_finger']
 
+def store_new_dataset(input_dataset_path, output_dataset_path, obs_wheels, obs_tracer):
+    # Check if output path exists
+    if os.path.exists(output_dataset_path):
+        print(f"The file {output_dataset_path} already exists. Exiting...")
+        return
+
+    # Load the uncompressed dataset
+    with h5py.File(input_dataset_path, 'r') as infile:
+        # Create the replayed dataset
+        with h5py.File(output_dataset_path, 'w') as outfile:
+
+            outfile.attrs['sim'] = infile.attrs['sim']
+            outfile.attrs['compress'] = True
+
+            # Copy non-image data directly
+            for key in infile.keys():
+                outfile.copy(infile[key], key)
+
+            max_timesteps = infile['action'].shape[0]
+            _ = outfile.create_dataset('obs_wheels', (max_timesteps, 2))
+            _ = outfile.create_dataset('obs_tracer', (max_timesteps, 2))
+
+            outfile['obs_wheels'][()] = obs_wheels
+            outfile['obs_tracer'][()] = obs_tracer
+
+    print(f"Replayed dataset saved to {output_dataset_path}")
+
+
 def main(args):
     dataset_dir = args['dataset_dir']
     episode_idx = args['episode_idx']
     dataset_name = f'episode_{episode_idx}'
 
     dataset_path = os.path.join(dataset_dir, dataset_name + '.hdf5')
+    dataset_new_path = os.path.join(dataset_dir, dataset_name + '_replayed.hdf5')
     if not os.path.isfile(dataset_path):
         print(f'Dataset does not exist at \n{dataset_path}\n')
         exit()
@@ -46,6 +75,8 @@ def main(args):
     obs_wheels = np.array(obs_wheels)
     obs_tracer = np.array(obs_tracer)
 
+    store_new_dataset(dataset_path, dataset_new_path, obs_wheels, obs_tracer)
+
     plt.plot(base_actions[:, 0], label='action_linear')
     plt.plot(base_actions[:, 1], label='action_angular')
     plt.plot(obs_wheels[:, 0], '--', label='obs_wheels_linear')
@@ -53,7 +84,7 @@ def main(args):
     plt.plot(obs_tracer[:, 0], '-.', label='obs_tracer_linear')
     plt.plot(obs_tracer[:, 1], '-.', label='obs_tracer_angular')
     plt.legend()
-    plt.savefig('replay_episodes_vel_debug.png', dpi=300)
+    plt.savefig('replay_and record_episodes_vel_debug.png', dpi=300)
     
 
     move_grippers([env.puppet_bot_left, env.puppet_bot_right], [PUPPET_GRIPPER_JOINT_OPEN] * 2, move_time=0.5)  # open

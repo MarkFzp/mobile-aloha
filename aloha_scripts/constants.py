@@ -51,6 +51,18 @@ TASK_CONFIGS = {
         'episode_len': 1200,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
+    'aloha_mobile_dummy':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_dummy',
+        'num_episodes': 50,
+        'episode_len': 1000,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_fork':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_fork',
+        'num_episodes': 50,
+        'episode_len': 400,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    }
 }
 
 ### ALOHA fixed constants

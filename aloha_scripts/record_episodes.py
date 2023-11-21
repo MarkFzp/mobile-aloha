@@ -111,7 +111,8 @@ def capture_one_episode(dt, max_timesteps, camera_names, dataset_dir, dataset_na
     move_grippers([env.puppet_bot_left, env.puppet_bot_right], [PUPPET_GRIPPER_JOINT_OPEN] * 2, move_time=0.5)
 
     freq_mean = print_dt_diagnosis(actual_dt_history)
-    if freq_mean < 42:
+    if freq_mean < 30:
+        print(f'\n\nfreq_mean is {freq_mean}, lower than 30, re-collecting... \n\n\n\n')
         return False
 
     """
@@ -135,6 +136,7 @@ def capture_one_episode(dt, max_timesteps, camera_names, dataset_dir, dataset_na
         '/observations/effort': [],
         '/action': [],
         '/base_action': [],
+        '/base_action_t265': [],
     }
     for cam_name in camera_names:
         data_dict[f'/observations/images/{cam_name}'] = []
@@ -148,8 +150,18 @@ def capture_one_episode(dt, max_timesteps, camera_names, dataset_dir, dataset_na
         data_dict['/observations/effort'].append(ts.observation['effort'])
         data_dict['/action'].append(action)
         data_dict['/base_action'].append(ts.observation['base_vel'])
+        data_dict['/base_action_t265'].append(ts.observation['base_vel_t265'])
         for cam_name in camera_names:
             data_dict[f'/observations/images/{cam_name}'].append(ts.observation['images'][cam_name])
+    
+    # plot /base_action vs /base_action_t265
+    import matplotlib.pyplot as plt
+    plt.plot(np.array(data_dict['/base_action'])[:, 0], label='base_action_linear')
+    plt.plot(np.array(data_dict['/base_action'])[:, 1], label='base_action_angular')
+    plt.plot(np.array(data_dict['/base_action_t265'])[:, 0], '--', label='base_action_t265_linear')
+    plt.plot(np.array(data_dict['/base_action_t265'])[:, 1], '--', label='base_action_t265_angular')
+    plt.legend()
+    plt.savefig('record_episodes_vel_debug.png', dpi=300)
 
     COMPRESS = True
 
@@ -203,6 +215,7 @@ def capture_one_episode(dt, max_timesteps, camera_names, dataset_dir, dataset_na
         _ = obs.create_dataset('effort', (max_timesteps, 14))
         _ = root.create_dataset('action', (max_timesteps, 14))
         _ = root.create_dataset('base_action', (max_timesteps, 2))
+        _ = root.create_dataset('base_action_t265', (max_timesteps, 2))
 
         for name, array in data_dict.items():
             root[name][...] = array
