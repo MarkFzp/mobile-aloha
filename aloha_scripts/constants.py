@@ -1,4 +1,5 @@
 ### Task parameters
+import pathlib
 import os
 
 DATA_DIR = os.path.expanduser('~/data')
@@ -45,22 +46,10 @@ TASK_CONFIGS = {
         'episode_len': 1300,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
-    'aloha_mobile_wipe_wine_new':{
-        'dataset_dir': DATA_DIR + '/aloha_mobile_wipe_wine_new',
-        'num_episodes': 50,
-        'episode_len': 1300,
-        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
-    },
-    'aloha_mobile_wipe_wine_new_30':{
-        'dataset_dir': DATA_DIR + '/aloha_mobile_wipe_wine_new_30',
-        'num_episodes': 50,
-        'episode_len': 1300,
-        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
-    },
     'aloha_mobile_wash_pan':{
         'dataset_dir': DATA_DIR + '/aloha_mobile_wash_pan',
         'num_episodes': 50,
-        'episode_len': 1200,
+        'episode_len': 1100,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
     'aloha_mobile_dummy':{
@@ -79,8 +68,11 @@ TASK_CONFIGS = {
 
 ### ALOHA fixed constants
 DT = 0.02
+FPS = 50
 JOINT_NAMES = ["waist", "shoulder", "elbow", "forearm_roll", "wrist_angle", "wrist_rotate"]
 START_ARM_POSE = [0, -0.96, 1.16, 0, -0.3, 0, 0.02239, -0.02239,  0, -0.96, 1.16, 0, -0.3, 0, 0.02239, -0.02239]
+
+XML_DIR = str(pathlib.Path(__file__).parent.resolve()) + '/assets/' # note: absolute path
 
 # Left finger position limits (qpos[7]), right_finger = -1 * left_finger
 MASTER_GRIPPER_POSITION_OPEN = 0.02417

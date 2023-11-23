@@ -5,7 +5,8 @@ from robot_utils import move_grippers, calibrate_linear_vel, smooth_base_action,
 import argparse
 import matplotlib.pyplot as plt
 from real_env import make_real_env
-from constants import JOINT_NAMES, PUPPET_GRIPPER_JOINT_OPEN
+from constants import JOINT_NAMES, PUPPET_GRIPPER_JOINT_OPEN, fps
+import time
 
 import IPython
 e = IPython.embed
@@ -66,12 +67,15 @@ def main(args):
     apply_actions = actions
     apply_base_actions = base_actions[offset:] * scale
 
+    DT = 1 / fps
     for action, base_action in zip(apply_actions, apply_base_actions):
+        time1 = time.time()
         # base_action = calibrate_linear_vel(base_action, c=0.19)
         # base_action = postprocess_base_action(base_action)
         ts = env.step(action, base_action, get_tracer_vel=True)
         obs_wheels.append(ts.observation['base_vel'])
         obs_tracer.append(ts.observation['tracer_vel'])
+        time.sleep(max(0, DT - (time.time() - time1)))
     obs_wheels = np.array(obs_wheels)
     obs_tracer = np.array(obs_tracer)
 

@@ -5,7 +5,8 @@ from robot_utils import move_grippers, calibrate_linear_vel, smooth_base_action,
 import argparse
 import matplotlib.pyplot as plt
 from real_env import make_real_env
-from constants import JOINT_NAMES, PUPPET_GRIPPER_JOINT_OPEN
+from constants import JOINT_NAMES, PUPPET_GRIPPER_JOINT_OPEN, FPS
+import time
 
 import IPython
 e = IPython.embed
@@ -32,7 +33,7 @@ def main(args):
         base_actions = root['/base_action'][()]
 
     if use_actuator_net:
-        from act.train_actuator_network import ActuatorNetwork
+        from train_actuator_network import ActuatorNetwork
         import torch
         import pickle
         actuator_network = ActuatorNetwork(prediction_len)
@@ -67,6 +68,14 @@ def main(args):
         
         processed_base_actions = np.array(processed_base_actions)
         assert processed_base_actions.shape == base_actions.shape
+
+        plt.plot(base_actions[:, 0], label='action_linear')
+        plt.plot(processed_base_actions[:, 0], '--', label='processed_action_linear')
+        plt.plot(base_actions[:, 1], label='action_angular')
+        plt.plot(processed_base_actions[:, 1], '--', label='processed_action_angular')
+        plt.plot()
+        plt.legend()
+        plt.show()
     else:
         # processed_base_actions = smooth_base_action(base_actions)
         processed_base_actions = base_actions
@@ -76,25 +85,31 @@ def main(args):
     obs_wheels = []
     obs_tracer = []
 
+    time0 = time.time()
+    DT = 1 / FPS
     for action, base_action in zip(actions, processed_base_actions):
+        time1 = time.time()
         # base_action = calibrate_linear_vel(base_action, c=0.19)
         # base_action = postprocess_base_action(base_action)
         ts = env.step(action, base_action, get_tracer_vel=True)
         obs_wheels.append(ts.observation['base_vel'])
         obs_tracer.append(ts.observation['tracer_vel'])
+        time.sleep(max(0, DT - (time.time() - time1)))
+    print(f'Avg fps: {len(actions) / (time.time() - time0)}')
     obs_wheels = np.array(obs_wheels)
     obs_tracer = np.array(obs_tracer)
 
     plt.plot(base_actions[:, 0], label='action_linear')
-    plt.plot(processed_base_actions[:, 0], '-.-', label='processed_action_linear')
+    plt.plot(processed_base_actions[:, 0], '--', label='processed_action_linear')
     plt.plot(obs_wheels[:, 0], '--', label='obs_wheels_linear')
     plt.plot(obs_tracer[:, 0], '-.', label='obs_tracer_linear')
     plt.plot()
     plt.legend()
     plt.savefig('replay_episodes_linear_vel.png', dpi=300)
-
+    
+    plt.clf()
     plt.plot(base_actions[:, 1], label='action_angular')
-    plt.plot(processed_base_actions[:, 1], '-.-', label='processed_action_angular')
+    plt.plot(processed_base_actions[:, 1], '--', label='processed_action_angular')
     plt.plot(obs_wheels[:, 1], '--', label='obs_wheels_angular')
     plt.plot(obs_tracer[:, 1], '-.', label='obs_tracer_angular')
     plt.plot()

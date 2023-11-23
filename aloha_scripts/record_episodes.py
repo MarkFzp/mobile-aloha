@@ -7,7 +7,7 @@ import numpy as np
 from tqdm import tqdm
 import cv2
 
-from constants import DT, START_ARM_POSE, TASK_CONFIGS
+from constants import DT, START_ARM_POSE, TASK_CONFIGS, FPS
 from constants import MASTER_GRIPPER_JOINT_MID, PUPPET_GRIPPER_JOINT_CLOSE, PUPPET_GRIPPER_JOINT_OPEN
 from robot_utils import Recorder, ImageRecorder, get_arm_gripper_positions
 from robot_utils import move_arms, torque_on, torque_off, move_grippers
@@ -92,6 +92,8 @@ def capture_one_episode(dt, max_timesteps, camera_names, dataset_dir, dataset_na
     timesteps = [ts]
     actions = []
     actual_dt_history = []
+    time0 = time.time()
+    DT = 1 / FPS
     for t in tqdm(range(max_timesteps)):
         t0 = time.time() #
         action = get_action(master_bot_left, master_bot_right)
@@ -101,6 +103,8 @@ def capture_one_episode(dt, max_timesteps, camera_names, dataset_dir, dataset_na
         timesteps.append(ts)
         actions.append(action)
         actual_dt_history.append([t0, t1, t2])
+        time.sleep(DT - (time.time() - t0))
+    print(f'Avg fps: {max_timesteps / (time.time() - time0)}')
 
     # Torque on both master bots
     torque_on(master_bot_left)
