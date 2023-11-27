@@ -44,12 +44,27 @@ TASK_CONFIGS = {
         'dataset_dir': DATA_DIR + '/aloha_mobile_wipe_wine',
         'num_episodes': 50,
         'episode_len': 1300,
+        'train_ratio': 0.9,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_wipe_wine_cotrain':{
+        'dataset_dir': [
+            DATA_DIR + '/aloha_mobile_wipe_wine',
+            DATA_DIR + '/aloha_compressed_dataset',
+        ], # only the first dataset_dir is used for val
+        'stats_dir': [
+            DATA_DIR + '/aloha_mobile_wipe_wine',
+        ],
+        'sample_weights': [5, 5],
+        'train_ratio': 0.9, # ratio of train data from the first dataset_dir
+        'episode_len': 1100,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
     'aloha_mobile_wash_pan':{
         'dataset_dir': DATA_DIR + '/aloha_mobile_wash_pan',
         'num_episodes': 50,
         'episode_len': 1100,
+        'train_ratio': 0.9,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
     'aloha_mobile_wash_pan_cotrain':{
@@ -60,7 +75,7 @@ TASK_CONFIGS = {
         'stats_dir': [
             DATA_DIR + '/aloha_mobile_wash_pan',
         ],
-        'sample_weights': [100, 100],
+        'sample_weights': [5, 5],
         'train_ratio': 0.9, # ratio of train data from the first dataset_dir
         'episode_len': 1100,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
