@@ -31,7 +31,7 @@ TASK_CONFIGS = {
     'aloha_mobile_object_to_cabinet':{
         'dataset_dir': DATA_DIR + '/aloha_mobile_object_to_cabinet',
         'num_episodes': 50,
-        'episode_len': 1700,
+        'episode_len': 1500,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
     'aloha_mobile_glass_to_cabinet':{
@@ -90,6 +90,12 @@ TASK_CONFIGS = {
         'dataset_dir': DATA_DIR + '/aloha_mobile_fork',
         'num_episodes': 50,
         'episode_len': 400,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_elevator':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_elevator',
+        'num_episodes': 50,
+        'episode_len': 8500,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     }
 }
