@@ -52,7 +52,7 @@ class RealEnv:
         if setup_base:
             self.setup_base()
         
-        self.setup_t265()
+        # self.setup_t265()
         self.setup_dxl()
 
         self.recorder_left = Recorder('left', init_node=False)
@@ -109,6 +109,7 @@ class RealEnv:
         return self.image_recorder.get_images()
 
     def get_base_vel_t265(self):
+        raise NotImplementedError
         frames = self.pipeline.wait_for_frames()
         pose_frame = frames.get_pose_frame()
         pose = pose_frame.get_pose_data()
@@ -160,7 +161,7 @@ class RealEnv:
         obs['qvel'] = self.get_qvel()
         obs['effort'] = self.get_effort()
         obs['images'] = self.get_images()
-        obs['base_vel_t265'] = self.get_base_vel_t265()
+        # obs['base_vel_t265'] = self.get_base_vel_t265()
         obs['base_vel'] = self.get_base_vel()
         if get_tracer_vel:
             obs['tracer_vel'] = self.get_tracer_vel()
