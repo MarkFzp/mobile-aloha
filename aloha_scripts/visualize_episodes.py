@@ -62,6 +62,7 @@ def main(args):
         dataset_name = f'episode_{episode_idx}'
 
     qpos, qvel, effort, action, base_action, image_dict = load_hdf5(dataset_dir, dataset_name)
+    print('hdf5 loaded!!')
     save_videos(image_dict, DT, video_path=os.path.join(dataset_dir, dataset_name + '_video.mp4'))
     visualize_joints(qpos, action, plot_path=os.path.join(dataset_dir, dataset_name + '_qpos.png'))
     # visualize_single(effort, 'effort', plot_path=os.path.join(dataset_dir, dataset_name + '_effort.png'))
