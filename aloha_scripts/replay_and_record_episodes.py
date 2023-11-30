@@ -88,7 +88,7 @@ def main(args):
     plt.plot(obs_tracer[:, 0], '-.', label='obs_tracer_linear')
     plt.plot(obs_tracer[:, 1], '-.', label='obs_tracer_angular')
     plt.legend()
-    plt.savefig('replay_and record_episodes_vel_debug.png', dpi=300)
+    plt.savefig('replay_and_record_episodes_vel_debug.png', dpi=300)
     
 
     move_grippers([env.puppet_bot_left, env.puppet_bot_right], [PUPPET_GRIPPER_JOINT_OPEN] * 2, move_time=0.5)  # open

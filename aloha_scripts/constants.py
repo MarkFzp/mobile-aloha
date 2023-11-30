@@ -40,6 +40,24 @@ TASK_CONFIGS = {
         'episode_len': 1500,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
+    'aloha_mobile_cabinet':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_cabinet',
+        'num_episodes': 50,
+        'episode_len': 1500,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_high_five':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_high_five',
+        'num_episodes': 50,
+        'episode_len': 2000,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_elevator_button':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_elevator_button',
+        'num_episodes': 50,
+        'episode_len': 800,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
     'aloha_mobile_wipe_wine':{
         'dataset_dir': DATA_DIR + '/aloha_mobile_wipe_wine',
         'num_episodes': 50,
@@ -81,6 +99,24 @@ TASK_CONFIGS = {
         'dataset_dir': DATA_DIR + '/aloha_mobile_elevator',
         'num_episodes': 50,
         'episode_len': 8500,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_cabinet_handles':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_cabinet_handles',
+        'num_episodes': 50,
+        'episode_len': 200,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_cabinet_grasp_pots':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_cabinet_grasp_pots',
+        'num_episodes': 50,
+        'episode_len': 200,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_chair':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_chair',
+        'num_episodes': 50,
+        'episode_len': 2400,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     }
 }
