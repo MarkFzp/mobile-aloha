@@ -4,83 +4,15 @@ import os
 
 DATA_DIR = os.path.expanduser('~/data')
 TASK_CONFIGS = {
-    'aloha_wear_shoe':{
-        'dataset_dir': DATA_DIR + '/aloha_wear_shoe',
-        'num_episodes': 50,
+    'aloha_mobile_dummy':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_dummy',
         'episode_len': 1000,
-        'camera_names': ['cam_high', 'cam_low', 'cam_left_wrist', 'cam_right_wrist']
-    },
-    'aloha_mobile_grasp_pen':{
-        'dataset_dir': DATA_DIR + '/aloha_mobile_grasp_pen',
-        'num_episodes': 50,
-        'episode_len': 500,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
-    'aloha_mobile_grasp_pen_diverse':{
-        'dataset_dir': DATA_DIR + '/aloha_mobile_grasp_pen_diverse',
-        'num_episodes': 50,
-        'episode_len': 500,
-        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
-    },
-    'aloha_mobile_grasp_pen_all':{
-        'dataset_dir': DATA_DIR + '/aloha_mobile_grasp_pen_all',
-        'num_episodes': 100,
-        'episode_len': 500,
-        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
-    },
-    'aloha_mobile_object_to_cabinet':{
-        'dataset_dir': DATA_DIR + '/aloha_mobile_object_to_cabinet',
-        'num_episodes': 50,
-        'episode_len': 1500,
-        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
-    },
-    'aloha_mobile_glass_to_cabinet':{
-        'dataset_dir': DATA_DIR + '/aloha_mobile_glass_to_cabinet',
-        'num_episodes': 50,
-        'episode_len': 1500,
-        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
-    },
-    'aloha_mobile_cabinet':{
-        'dataset_dir': DATA_DIR + '/aloha_mobile_cabinet',
-        'num_episodes': 50,
-        'episode_len': 1500,
-        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
-    },
-    'aloha_mobile_high_five':{
-        'dataset_dir': DATA_DIR + '/aloha_mobile_high_five',
-        'num_episodes': 50,
-        'episode_len': 2000,
-        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
-    },
-    'aloha_mobile_elevator_button':{
-        'dataset_dir': DATA_DIR + '/aloha_mobile_elevator_button',
-        'num_episodes': 50,
-        'episode_len': 800,
-        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
-    },
-    'aloha_mobile_wipe_wine':{
-        'dataset_dir': DATA_DIR + '/aloha_mobile_wipe_wine',
-        'num_episodes': 50,
-        'episode_len': 1300,
-        'train_ratio': 0.9,
-        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
-    },
-    'aloha_mobile_wipe_wine_cotrain':{
-        'dataset_dir': [
-            DATA_DIR + '/aloha_mobile_wipe_wine',
-            DATA_DIR + '/aloha_compressed_dataset',
-        ], # only the first dataset_dir is used for val
-        'stats_dir': [
-            DATA_DIR + '/aloha_mobile_wipe_wine',
-        ],
-        'sample_weights': [5, 5],
-        'train_ratio': 0.9, # ratio of train data from the first dataset_dir
-        'episode_len': 1100,
-        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
-    },
+
+    # wash_pan
     'aloha_mobile_wash_pan':{
         'dataset_dir': DATA_DIR + '/aloha_mobile_wash_pan',
-        'num_episodes': 50,
         'episode_len': 1100,
         'train_ratio': 0.9,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
@@ -98,42 +30,173 @@ TASK_CONFIGS = {
         'episode_len': 1100,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
-    'aloha_mobile_dummy':{
-        'dataset_dir': DATA_DIR + '/aloha_mobile_dummy',
-        'num_episodes': 50,
-        'episode_len': 1000,
+
+    # wipe_wine
+    'aloha_mobile_wipe_wine':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_wipe_wine',
+        'episode_len': 1300,
+        'train_ratio': 0.9,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
-    'aloha_mobile_fork':{
-        'dataset_dir': DATA_DIR + '/aloha_mobile_fork',
-        'num_episodes': 50,
-        'episode_len': 400,
+    'aloha_mobile_wipe_wine_cotrain':{
+        'dataset_dir': [
+            DATA_DIR + '/aloha_mobile_wipe_wine',
+            DATA_DIR + '/aloha_compressed_dataset',
+        ], # only the first dataset_dir is used for val
+        'stats_dir': [
+            DATA_DIR + '/aloha_mobile_wipe_wine',
+        ],
+        'sample_weights': [5, 5],
+        'train_ratio': 0.9, # ratio of train data from the first dataset_dir
+        'episode_len': 1300,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
+
+    # cabinet
+    'aloha_mobile_cabinet':{
+        'dataset_dir': [
+            DATA_DIR + '/aloha_mobile_cabinet',
+            DATA_DIR + '/aloha_mobile_cabinet_handles', # 200
+            DATA_DIR + '/aloha_mobile_cabinet_grasp_pots', # 200
+        ], # only the first dataset_dir is used for val
+        'stats_dir': [
+            DATA_DIR + '/aloha_mobile_cabinet',
+        ],
+        'sample_weights': [6, 1, 1],
+        'train_ratio': 0.99, # ratio of train data from the first dataset_dir
+        'episode_len': 1500,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_cabinet_cotrain':{
+        'dataset_dir': [
+            DATA_DIR + '/aloha_mobile_cabinet',
+            DATA_DIR + '/aloha_mobile_cabinet_handles',
+            DATA_DIR + '/aloha_mobile_cabinet_grasp_pots',
+            DATA_DIR + '/aloha_compressed_dataset',
+        ], # only the first dataset_dir is used for val
+        'stats_dir': [
+            DATA_DIR + '/aloha_mobile_cabinet',
+        ],
+        'sample_weights': [6, 1, 1, 2],
+        'train_ratio': 0.99, # ratio of train data from the first dataset_dir
+        'episode_len': 1500,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+
+    # elevator
     'aloha_mobile_elevator':{
         'dataset_dir': DATA_DIR + '/aloha_mobile_elevator',
-        'num_episodes': 50,
+        'train_ratio': 0.99,
         'episode_len': 8500,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
-    'aloha_mobile_cabinet_handles':{
-        'dataset_dir': DATA_DIR + '/aloha_mobile_cabinet_handles',
-        'num_episodes': 50,
-        'episode_len': 200,
+    'aloha_mobile_elevator_truncated':{
+        'dataset_dir': [
+            DATA_DIR + '/aloha_mobile_elevator_truncated',
+            DATA_DIR + '/aloha_mobile_elevator_2', # 1200
+            DATA_DIR + '/aloha_mobile_elevator_button', # 800
+        ], # only the first dataset_dir is used for val
+        'stats_dir': [
+            DATA_DIR + '/aloha_mobile_elevator_truncated',
+            DATA_DIR + '/aloha_mobile_elevator_2',
+        ],
+        'sample_weights': [3, 3, 2],
+        'train_ratio': 0.99, # ratio of train data from the first dataset_dir
+        'episode_len': 2250,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
-    'aloha_mobile_cabinet_grasp_pots':{
-        'dataset_dir': DATA_DIR + '/aloha_mobile_cabinet_grasp_pots',
-        'num_episodes': 50,
-        'episode_len': 200,
+    'aloha_mobile_elevator_truncated_cotrain':{
+        'dataset_dir': [
+            DATA_DIR + '/aloha_mobile_elevator_truncated',
+            DATA_DIR + '/aloha_mobile_elevator_2',
+            DATA_DIR + '/aloha_mobile_elevator_button',
+            DATA_DIR + '/aloha_compressed_dataset',
+        ], # only the first dataset_dir is used for val
+        'stats_dir': [
+            DATA_DIR + '/aloha_mobile_elevator_truncated',
+            DATA_DIR + '/aloha_mobile_elevator_2',
+        ],
+        'sample_weights': [3, 3, 2, 1],
+        'train_ratio': 0.99, # ratio of train data from the first dataset_dir
+        'episode_len': 2250,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
+
+    # high_five
+    'aloha_mobile_high_five':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_high_five',
+        'train_ratio': 0.9,
+        'episode_len': 2000,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_high_five_cotrain':{
+        'dataset_dir': [
+            DATA_DIR + '/aloha_mobile_high_five',
+            DATA_DIR + '/aloha_compressed_dataset',
+        ], # only the first dataset_dir is used for val
+        'stats_dir': [
+            DATA_DIR + '/aloha_mobile_high_five',
+        ],
+        'sample_weights': [7.5, 2.5],
+        'train_ratio': 0.9, # ratio of train data from the first dataset_dir
+        'episode_len': 2000,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+
+    # chair
     'aloha_mobile_chair':{
         'dataset_dir': DATA_DIR + '/aloha_mobile_chair',
-        'num_episodes': 50,
+        'train_ratio': 0.95,
         'episode_len': 2400,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
-    }
+    },
+    'aloha_mobile_chair_truncated':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_chair_truncated',
+        'train_ratio': 0.95,
+        'episode_len': 2000,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_chair_truncated_cotrain':{
+        'dataset_dir': [
+            DATA_DIR + '/aloha_mobile_chair_truncated',
+            DATA_DIR + '/aloha_compressed_dataset',
+        ], # only the first dataset_dir is used for val
+        'stats_dir': [
+            DATA_DIR + '/aloha_mobile_chair_truncated',
+        ],
+        'sample_weights': [5, 5],
+        'train_ratio': 0.95, # ratio of train data from the first dataset_dir
+        'episode_len': 2000,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+
+    # shrimp
+    'aloha_mobile_shrimp':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_shrimp',
+        'train_ratio': 0.99,
+        'episode_len': 4500,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_shrimp_truncated':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_shrimp_truncated',
+        'train_ratio': 0.99, # ratio of train data from the first dataset_dir
+        'episode_len': 3750,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_shrimp_2_cotrain':{
+        'dataset_dir': [
+            DATA_DIR + '/aloha_mobile_shrimp_2',
+            DATA_DIR + '/aloha_mobile_shrimp_before_spatula_down', # 2200
+            DATA_DIR + '/aloha_compressed_dataset',
+        ], # only the first dataset_dir is used for val
+        'stats_dir': [
+            DATA_DIR + '/aloha_mobile_shrimp_2',
+        ],
+        'sample_weights': [5, 3, 2],
+        'train_ratio': 0.99, # ratio of train data from the first dataset_dir
+        'episode_len': 4500,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
 }
 
 ### ALOHA fixed constants
