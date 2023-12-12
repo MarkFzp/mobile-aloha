@@ -183,7 +183,7 @@ class RealEnv:
             discount=None,
             observation=self.get_observation())
 
-    def step(self, action, base_action=None, get_tracer_vel=False):
+    def step(self, action, base_action=None, get_tracer_vel=False, get_obs=True):
         state_len = int(len(action) / 2)
         left_action = action[:state_len]
         right_action = action[state_len:]
@@ -198,11 +198,15 @@ class RealEnv:
             base_action_linear, base_action_angular = base_action
             self.tracer.SetMotionCommand(linear_vel=base_action_linear, angular_vel=base_action_angular)
         # time.sleep(DT)
+        if get_obs:
+            obs = self.get_observation(get_tracer_vel)
+        else:
+            obs = None
         return dm_env.TimeStep(
             step_type=dm_env.StepType.MID,
             reward=self.get_reward(),
             discount=None,
-            observation=self.get_observation(get_tracer_vel))
+            observation=obs)
 
 def get_action(master_bot_left, master_bot_right):
     action = np.zeros(14) # 6 joint + 1 gripper, for two arms
