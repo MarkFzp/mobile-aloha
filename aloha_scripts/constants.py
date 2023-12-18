@@ -51,6 +51,25 @@ TASK_CONFIGS = {
         'episode_len': 1300,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
+    'aloha_mobile_wipe_wine_2':{
+        'dataset_dir': DATA_DIR + '/aloha_mobile_wipe_wine_2',
+        'episode_len': 1300,
+        'train_ratio': 0.9, # ratio of train data from the first dataset_dir
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
+    'aloha_mobile_wipe_wine_2_cotrain':{
+        'dataset_dir': [
+            DATA_DIR + '/aloha_mobile_wipe_wine_2',
+            DATA_DIR + '/aloha_compressed_dataset',
+        ], # only the first dataset_dir is used for val
+        'stats_dir': [
+            DATA_DIR + '/aloha_mobile_wipe_wine_2',
+        ],
+        'sample_weights': [5, 5],
+        'train_ratio': 0.9, # ratio of train data from the first dataset_dir
+        'episode_len': 1300,
+        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    },
 
     # cabinet
     'aloha_mobile_cabinet':{
