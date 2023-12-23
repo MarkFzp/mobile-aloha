@@ -202,20 +202,33 @@ TASK_CONFIGS = {
         'episode_len': 3750,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
-    'aloha_mobile_shrimp_2_cotrain':{
+    'aloha_mobile_shrimp_truncated_cotrain':{
         'dataset_dir': [
-            DATA_DIR + '/aloha_mobile_shrimp_2',
-            DATA_DIR + '/aloha_mobile_shrimp_before_spatula_down', # 2200
+            DATA_DIR + '/aloha_mobile_shrimp_truncated',
             DATA_DIR + '/aloha_compressed_dataset',
         ], # only the first dataset_dir is used for val
         'stats_dir': [
-            DATA_DIR + '/aloha_mobile_shrimp_2',
+            DATA_DIR + '/aloha_mobile_shrimp_truncated',
         ],
-        'sample_weights': [5, 3, 2],
+        'sample_weights': [5, 5],
         'train_ratio': 0.99, # ratio of train data from the first dataset_dir
-        'episode_len': 4500,
+        'episode_len': 3750,
         'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
     },
+    # 'aloha_mobile_shrimp_2_cotrain':{
+    #     'dataset_dir': [
+    #         DATA_DIR + '/aloha_mobile_shrimp_2',
+    #         DATA_DIR + '/aloha_mobile_shrimp_before_spatula_down', # 2200
+    #         DATA_DIR + '/aloha_compressed_dataset',
+    #     ], # only the first dataset_dir is used for val
+    #     'stats_dir': [
+    #         DATA_DIR + '/aloha_mobile_shrimp_2',
+    #     ],
+    #     'sample_weights': [5, 3, 2],
+    #     'train_ratio': 0.99, # ratio of train data from the first dataset_dir
+    #     'episode_len': 4500,
+    #     'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']
+    # },
 }
 
 ### ALOHA fixed constants
