@@ -1,10 +1,11 @@
-# ALOHA: A Low-cost Open-source Hardware System for Bimanual Teleoperation
+# Mobile ALOHA: Learning Bimanual Mobile Manipulation with Low-Cost Whole-Body Teleoperation
 
-#### Project Website: https://tonyzhaozh.github.io/aloha/
 
-This codebase contains implementation for teleoperation and data collection with the ALOHA hardware.
-To build ALOHA, follow the [Hardware Assembly Tutorial](https://docs.google.com/document/d/1sgRZmpS7HMcZTPfGy3kAxDrqFMtNNzmK-yVtX5cKYME/edit?usp=sharing) and the quick start guide below.
-To train imitation learning algorithms, you would also need to install [ACT](https://github.com/tonyzhaozh/act).
+#### Project Website: https://mobile-aloha.github.io/
+
+This codebase is forked from the [ALOHA repo](https://github.com/tonyzhaozh/aloha), and contains implementation for teleoperation and data collection with the Mobile ALOHA hardware.
+To build ALOHA, follow the [Hardware Assembly Tutorial](https://docs.google.com/document/d/1_3yhWjodSNNYlpxkRCPIlvIAaQ76Nqk2wsqhnEVM6Dc) and the quick start guide below.
+To train imitation learning algorithms, you would also need to install [ACT for Mobile ALOHA](https://github.com/MarkFzp/act-plus-plus) which is forked from [ACT](https://github.com/tonyzhaozh/act).
 
 ### Repo Structure
 - ``config``: a config for each robot, designating the port they should bind to, more details in quick start guide.
@@ -12,12 +13,6 @@ To train imitation learning algorithms, you would also need to install [ACT](htt
 - ``aloha_scripts``: python code for teleop and data collection
 
 ## Quick start guide
-
-### Hardware selection 
-
-We suggest using a "heavy-duty" computer if possible. 
-
-*In particular, at least 6 USB3 ports are needed. 4 ports for robot connections and 2 ports for cameras.* We have seen cases that a machine was not able to stably connect to all 4 robot arms simultaneously over USB, especially when USB hubs are used.
 
 ### Software selection -- OS:
 
@@ -27,6 +22,7 @@ Currently tested and working configurations:
 
 Ongoing testing (compatibility effort underway):
 - :construction: ROS 2
+- :construction: >= Ubuntu 22.04
 
 ### Software installation - ROS:
 1. Install ROS and interbotix software following https://docs.trossenrobotics.com/interbotix_xsarms_docs/
@@ -41,7 +37,7 @@ Ongoing testing (compatibility effort underway):
 ### Hardware installation:
 
 The goal of this section is to run ``roslaunch aloha 4arms_teleop.launch``, which starts
-communication with 4 robots and 4 cameras. It should work after finishing the following steps:
+communication with 4 robots and 3 cameras. It should work after finishing the following steps:
 
 Step 1: Connect 4 robots to the computer via USB, and power on. *Do not use extension cable or usb hub*.
 - To check if the robot is connected, install dynamixel wizard [here](https://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_wizard2/)
@@ -85,18 +81,47 @@ Step 2: Set max current for gripper motors
 - This limits the max current through gripper motors, to prevent overloading errors.
 
 
-Step 3: Setup 4 cameras
+Step 3: Setup 3 cameras
 - You may use usb hub here, but *maximum 2 cameras per hub for reasonable latency*.
-- To make sure all 4 cameras are binding to a consistent port, similar steps are needed.
-- Cameras are by default binding to ``/dev/video{0, 1, 2...}``, while we want to have symlinks ``{CAM_RIGHT_WRIST, CAM_LEFT_WRIST, CAM_LOW, CAM_HIGH}``
+- To make sure all 3 cameras are binding to a consistent port, similar steps are needed.
+- Cameras are by default binding to ``/dev/video{0, 1, 2...}``, while we want to have symlinks ``{CAM_RIGHT_WRIST, CAM_LEFT_WRIST, CAM_HIGH}``
 - Take ``CAM_RIGHT_WRIST`` as an example, and let's say it is now binding to ``/dev/video0``. run ``udevadm info --name=/dev/video0 --attribute-walk | grep serial`` to obtain it's serial. Use the first one that shows up, the format should look similar to ``0E1A2B2F``.
 - Then ``sudo vim /etc/udev/rules.d/99-fixed-interbotix-udev.rules`` and add the following line 
 
       SUBSYSTEM=="video4linux", ATTRS{serial}=="<serial number here>", ATTR{index}=="0", ATTRS{idProduct}=="085c", ATTR{device/latency_timer}="1", SYMLINK+="CAM_RIGHT_WRIST"
 
-- Repeat this for ``{CAM_LEFT_WRIST, CAM_LOW, CAM_HIGH}`` in additional to ``CAM_RIGHT_WRIST``
+- Repeat this for ``{CAM_LEFT_WRIST, CAM_HIGH}`` in additional to ``CAM_RIGHT_WRIST``
 - To apply the changes, run ``sudo udevadm control --reload && sudo udevadm trigger``
-- If successful, you should be able to find ``{CAM_RIGHT_WRIST, CAM_LEFT_WRIST, CAM_LOW, CAM_HIGH}`` in your ``/dev``
+- If successful, you should be able to find ``{CAM_RIGHT_WRIST, CAM_LEFT_WRIST, CAM_HIGH}`` in your ``/dev``
+
+
+Step 4: Setup the AgileX Tracer base
+- Connect the base to the computer via the stock CANBUS-to-USB cable, and power on.
+- Install SDK from AgileX
+    ```
+    pip3 install pyagxrobots
+    ```
+- Enable gs_usb kernel module
+   ```
+   sudo modprobe gs_usb
+   ```
+- Bring up the CAN device
+   ```
+   sudo ip link set can0 up type can bitrate 500000
+   ```
+- If no error occured in the previous steps, you should be able to see the can device now by using command
+   ```
+   ifconfig -a
+   ```
+- Install and use can-utils to test the hardware
+   ```
+   sudo apt install can-utils
+   ```
+- Testing commands:
+   ```
+   # receiving data from can0
+   candump can0
+   ```
 
 At this point, have a new terminal
     
@@ -104,7 +129,7 @@ At this point, have a new terminal
     source /opt/ros/noetic/setup.sh && source ~/interbotix_ws/devel/setup.sh
     roslaunch aloha 4arms_teleop.launch
 
-If no error message is showing up, the computer should be successfully connected to all 4 cameras and all 4 robots.
+If no error message is showing up, the computer should be successfully connected to all 3 cameras, all 4 robot arms and the robot base.
 
 #### Trouble shooting
 - Make sure Dynamixel Wizard is disconnected, and no app is using webcam's stream. It will prevent ROS from connecting to
@@ -127,6 +152,8 @@ these devices.
     pip install einops
     pip install packaging
     pip install h5py
+    pip install tqdm
+    pip install wandb
 
 ### Testing teleoperation
 
