@@ -1,0 +1,5 @@
+LICENSE
+.*
+hardware
+*.ipynb
+docs
