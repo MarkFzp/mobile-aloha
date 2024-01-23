@@ -1,0 +1,10 @@
+{
+    "summary": "This CMakeLists.txt file sets the minimum required version, defines the project name as \"aloha\", compiles it as C++11, and finds the necessary catkin packages for ROS Kinetic and newer. It also includes necessary dependencies, declares package configurations, specifies additional header file locations, and prepares to build the project.",
+    "details": [
+        {
+            "comment": "This CMakeLists.txt file sets the minimum required version, defines the project name as \"aloha\", compiles it as C++11, and finds the necessary catkin packages for ROS Kinetic and newer. It also includes necessary dependencies, declares package configurations, specifies additional header file locations, and prepares to build the project.",
+            "location": "\"/media/root/Prima/works/mobile-aloha/docs/src/CMakeLists.txt\":0-38",
+            "content": "cmake_minimum_required(VERSION 2.8.3)\nproject(aloha)\n## Compile as C++11, supported in ROS Kinetic and newer\nadd_compile_options(-std=c++11)\n## Find catkin macros and libraries\n## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)\n## is used, also find other catkin packages\nfind_package(catkin REQUIRED COMPONENTS\n  interbotix_xs_msgs\n  interbotix_xsarm_control\n  rosbag\n  roscpp\n  tf2_ros\n  rviz\n  sensor_msgs\n  std_msgs\n  std_srvs\n)\n###################################\n## catkin specific configuration ##\n###################################\n## The catkin_package macro generates cmake config files for your package\n## Declare things to be passed to dependent projects\ncatkin_package(\n CATKIN_DEPENDS interbotix_xs_msgs interbotix_xsarm_control rosbag roscpp tf2_ros rviz sensor_msgs std_msgs std_srvs\n)\n###########\n## Build ##\n###########\n## Specify additional locations of header files\n## Your package locations should be listed before other locations\ninclude_directories(\n  ${catkin_INCLUDE_DIRS}\n)"
+        }
+    ]
+}

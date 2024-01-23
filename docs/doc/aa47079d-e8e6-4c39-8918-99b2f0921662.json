@@ -1,0 +1,10 @@
+{
+    "summary": "Config YAML for controlling the right puppet arm and gripper in mobile-aloha, specifying modes and profiles for position and linear position control.",
+    "details": [
+        {
+            "comment": "Config YAML for controlling the right puppet arm and gripper in mobile-aloha, specifying modes and profiles for position and linear position control.",
+            "location": "\"/media/root/Prima/works/mobile-aloha/docs/src/config/puppet_modes_right.yaml\":0-16",
+            "content": "port: /dev/ttyDXL_puppet_right\ngroups:\n  arm:\n    operating_mode: position\n    profile_type: velocity\n    profile_velocity: 0\n    profile_acceleration: 0\n    torque_enable: true\nsingles:\n  gripper:\n    operating_mode: linear_position\n    profile_type: velocity\n    profile_velocity: 0\n    profile_acceleration: 0\n    torque_enable: true"
+        }
+    ]
+}

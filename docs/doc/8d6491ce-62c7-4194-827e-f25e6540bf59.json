@@ -1,0 +1,15 @@
+{
+    "summary": "This code initializes positions for bots, moves their arms to those positions, and if \"all\" is given, also moves master bot arms to different positions in a robotics control script.",
+    "details": [
+        {
+            "comment": "The code imports necessary libraries, defines a main function with argument parsing for the 'all' flag, creates instances of InterbotixManipulatorXS for puppet and master bots, and assigns them to all_bots list based on the 'all' flag.",
+            "location": "\"/media/root/Prima/works/mobile-aloha/docs/src/aloha_scripts/sleep.py\":0-14",
+            "content": "from interbotix_xs_modules.arm import InterbotixManipulatorXS\nfrom robot_utils import move_arms, torque_on\nimport argparse\ndef main():\n    argparser = argparse.ArgumentParser()\n    argparser.add_argument('--all', action='store_true', default=False)\n    args = argparser.parse_args()\n    puppet_bot_left = InterbotixManipulatorXS(robot_model=\"vx300s\", group_name=\"arm\", gripper_name=\"gripper\", robot_name=f'puppet_left', init_node=True)\n    puppet_bot_right = InterbotixManipulatorXS(robot_model=\"vx300s\", group_name=\"arm\", gripper_name=\"gripper\", robot_name=f'puppet_right', init_node=False)\n    master_bot_left = InterbotixManipulatorXS(robot_model=\"wx250s\", group_name=\"arm\", gripper_name=\"gripper\", robot_name=f'master_left', init_node=False)\n    master_bot_right = InterbotixManipulatorXS(robot_model=\"wx250s\", group_name=\"arm\", gripper_name=\"gripper\", robot_name=f'master_right', init_node=False)\n    all_bots = [puppet_bot_left, puppet_bot_right, master_bot_left, master_bot_right] if args.all else [puppet_bot_left, puppet_bot_right]"
+        },
+        {
+            "comment": "This code initializes positions for a puppet and two master bots, then moves the arms of all bots to those positions. If the argument \"all\" is given, it also moves the arms of the two master bots to different positions. This is part of a robotics control script.",
+            "location": "\"/media/root/Prima/works/mobile-aloha/docs/src/aloha_scripts/sleep.py\":15-33",
+            "content": "    master_bots = [master_bot_left, master_bot_right]\n    for bot in all_bots:\n        torque_on(bot)\n    puppet_sleep_position = (0, -1.7, 1.55, 0, 0.65, 0)\n    master_sleep_left_position = (-0.61, 0., 0.43, 0., 1.04, -0.65)\n    master_sleep_right_position = (0.61, 0., 0.43, 0., 1.04, 0.65)\n    all_positions = [puppet_sleep_position] * 2 + [master_sleep_left_position, master_sleep_right_position] if args.all else [puppet_sleep_position] * 2\n    move_arms(all_bots, all_positions, move_time=2)\n    if args.all:\n        master_sleep_left_position_2 = (0., 0.66, -0.27, -0.0, 1.1, 0)\n        master_sleep_right_position_2 = (0., 0.66, -0.27, -0.0, 1.1, 0)\n        move_arms(master_bots, [master_sleep_left_position_2, master_sleep_right_position_2], move_time=1)\nif __name__ == '__main__':\n    main()"
+        }
+    ]
+}

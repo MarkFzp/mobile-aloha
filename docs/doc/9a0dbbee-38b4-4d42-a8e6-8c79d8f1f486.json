@@ -1,0 +1,10 @@
+{
+    "summary": "This YAML file defines configuration for a robot's right side, specifying the port and individual component settings such as torque enable for arm and gripper.",
+    "details": [
+        {
+            "comment": "This YAML file defines configuration for a robot's right side, specifying the port and individual component settings such as torque enable for arm and gripper.",
+            "location": "\"/media/root/Prima/works/mobile-aloha/docs/src/config/master_modes_right.yaml\":0-8",
+            "content": "port: /dev/ttyDXL_master_right\ngroups:\n  arm:\n    torque_enable: false\nsingles:\n  gripper:\n    torque_enable: false"
+        }
+    ]
+}

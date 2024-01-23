@@ -1,0 +1,544 @@
+{
+    "100": {
+        "file_id": 4,
+        "content": "            if step % 5 == 0:\n                print('[{}] Frequency: {:.2f} Hz'.format(\n                    step, 1.0 / (time.time() - read_start)))\n                print('> Pos: {}'.format(pos_now.tolist()))\n                print('> Vel: {}'.format(vel_now.tolist()))\n                print('> Cur: {}'.format(cur_now.tolist()))",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:599-604"
+    },
+    "101": {
+        "file_id": 4,
+        "content": "This code block prints the frequency, positions, velocities, and currents of a dynamixel robot every 5 steps. It updates the time elapsed since the last read operation and uses it to calculate the frequency. The data is formatted using string formatting before being printed.",
+        "type": "comment"
+    },
+    "102": {
+        "file_id": 5,
+        "content": "/aloha_scripts/example_waypoint_pid.py",
+        "type": "filepath"
+    },
+    "103": {
+        "file_id": 5,
+        "content": "This code contains classes for PIDController, DifferentialDrive, and RobotController. It calculates control values for a system, computes wheel speeds for linear and angular movements of a robot, and creates a controller for a differential drive robot with specified parameters. The robot checks waypoints and updates position and orientation in a while loop.",
+        "type": "summary"
+    },
+    "104": {
+        "file_id": 5,
+        "content": "import math\nclass PIDController:\n    def __init__(self, kp, ki, kd):\n        self.kp = kp\n        self.ki = ki\n        self.kd = kd\n        self.prev_error = 0\n        self.integral = 0\n    def compute(self, error, dt):\n        self.integral += error * dt\n        derivative = (error - self.prev_error) / dt\n        output = self.kp * error + self.ki * self.integral + self.kd * derivative\n        self.prev_error = error\n        return output\nclass DifferentialDrive:\n    def __init__(self, wheel_distance):\n        self.wheel_distance = wheel_distance\n    def compute_wheel_speeds(self, v, omega):\n        v_left = v - self.wheel_distance / 2 * omega\n        v_right = v + self.wheel_distance / 2 * omega\n        return v_left, v_right\nclass RobotController:\n    def __init__(self, kp, ki, kd, wheel_distance, v_max, position_threshold, yaw_threshold):\n        self.pid = PIDController(kp, ki, kd)\n        self.drive = DifferentialDrive(wheel_distance)\n        self.v_max = v_max\n        self.position_threshold = position_threshold",
+        "type": "code",
+        "location": "/aloha_scripts/example_waypoint_pid.py:1-30"
+    },
+    "105": {
+        "file_id": 5,
+        "content": "The code defines classes for PIDController, DifferentialDrive, and RobotController. The PIDController class calculates the proportional, integral, and derivative components of an error to control a system. The DifferentialDrive class computes the wheel speeds required for a robot's linear and angular movements. The RobotController class combines these classes to create a controller for a differential drive robot with specified parameters.",
+        "type": "comment"
+    },
+    "106": {
+        "file_id": 5,
+        "content": "        self.yaw_threshold = yaw_threshold\n    def control(self, x_robot, y_robot, theta_current, waypoints, target_yaws):\n        # Check if we reached the current waypoint and its orientation\n        x_target, y_target = waypoints[0]\n        theta_target = target_yaws[0]\n        distance_to_target = math.sqrt((x_target - x_robot)**2 + (y_target - y_robot)**2)\n        if distance_to_target < self.position_threshold and abs(self.normalize_angle(theta_current - theta_target)) < self.yaw_threshold:\n            waypoints.pop(0)  # Remove the reached waypoint\n            target_yaws.pop(0)  # Remove the reached yaw target\n            if not waypoints:  # All waypoints traversed\n                return 0, 0  # Stop the robot\n            x_target, y_target = waypoints[0]\n            theta_target = target_yaws[0]\n        # Calculate desired heading for position\n        theta_desired = math.atan2(y_target - y_robot, x_target - x_robot)\n        # Compute heading errors\n        delta_theta_position = self.normalize_angle(theta_desired - theta_current)",
+        "type": "code",
+        "location": "/aloha_scripts/example_waypoint_pid.py:31-48"
+    },
+    "107": {
+        "file_id": 5,
+        "content": "Checks if robot has reached current waypoint and its orientation, removes reached waypoints, returns 0 for stopped condition when all waypoints traversed.",
+        "type": "comment"
+    },
+    "108": {
+        "file_id": 5,
+        "content": "        delta_theta_yaw = self.normalize_angle(theta_target - theta_current)\n        # Blending between positional and yaw error based on distance to target\n        blend_factor = min(1, distance_to_target / self.position_threshold)\n        delta_theta = blend_factor * delta_theta_position + (1 - blend_factor) * delta_theta_yaw\n        # Get angular speed from PID\n        omega = self.pid.compute(delta_theta, 0.1)  # assuming dt = 0.1 for this example\n        # Decide linear speed\n        v = min(self.v_max, 0.1 * distance_to_target)  # proportionality constant of 0.1\n        # Compute wheel speeds\n        v_left, v_right = self.drive.compute_wheel_speeds(v, omega)\n        return v_left, v_right\n    def normalize_angle(self, angle):\n        while angle > math.pi:\n            angle -= 2 * math.pi\n        while angle < -math.pi:\n            angle += 2 * math.pi\n        return angle\n# Example usage:\nwaypoints = [(1, 1), (2, 2), (3, 1)]\ntarget_yaws = [math.pi/4, 0, -math.pi/4]\ncontroller = RobotController(kp=1.0, ki=0.1, kd=0.05, wheel_distance=0.5, v_max=1.0, position_threshold=0.1, yaw_threshold=0.1)",
+        "type": "code",
+        "location": "/aloha_scripts/example_waypoint_pid.py:49-71"
+    },
+    "109": {
+        "file_id": 5,
+        "content": "The function computes wheel speeds based on target distance and yaw angle using a PID controller, normalizes angles, and blends positional and yaw error based on the distance to the target. It also limits linear speed proportional to distance and returns left and right wheel speeds. Example usage provided for a RobotController instance with given parameters.",
+        "type": "comment"
+    },
+    "110": {
+        "file_id": 5,
+        "content": "# Simulating the robot’s movement towards waypoints:\nwhile waypoints:\n    v_left, v_right = controller.control(x_robot=0, y_robot=0, theta_current=0, waypoints=waypoints, target_yaws=target_yaws)\n    print(f'v_left: {v_left}, v_right: {v_right}')\n    # Here, update the robot’s position (x_robot, y_robot) and orientation (theta_current) based on v_left and v_right.",
+        "type": "code",
+        "location": "/aloha_scripts/example_waypoint_pid.py:72-76"
+    },
+    "111": {
+        "file_id": 5,
+        "content": "This code snippet is part of a robot movement simulation where the robot moves towards waypoints. It uses a while loop to continuously control the robot's left and right wheels (v_left, v_right) based on its current position (x_robot, y_robot), orientation (theta_current), and target waypoints/yaws. The robot's position and orientation are updated with each iteration of the loop.",
+        "type": "comment"
+    },
+    "112": {
+        "file_id": 6,
+        "content": "/aloha_scripts/get_episode_len.py",
+        "type": "filepath"
+    },
+    "113": {
+        "file_id": 6,
+        "content": "The code imports libraries, defines the \"main\" function that takes dataset and episode index arguments. It checks for dataset existence, retrieves attributes, prints data info, and adds \"--ismirror\" argument with \"store_true\" action.",
+        "type": "summary"
+    },
+    "114": {
+        "file_id": 6,
+        "content": "import os\nimport numpy as np\nimport cv2\nimport h5py\nimport argparse\nimport matplotlib.pyplot as plt\nfrom constants import DT\nimport IPython\ne = IPython.embed\ndef main(args):\n    dataset_dir = args['dataset_dir']\n    episode_idx = args['episode_idx']\n    dataset_name = f'episode_{episode_idx}'\n    dataset_path = os.path.join(dataset_dir, dataset_name + '.hdf5')\n    if not os.path.isfile(dataset_path):\n        print(f'Dataset does not exist at \\n{dataset_path}\\n')\n        exit()\n    with h5py.File(dataset_path, 'r') as root:\n        is_sim = root.attrs['sim']\n        compressed = root.attrs.get('compress', False)\n        qpos = root['/observations/qpos'][()]\n        print(f'dataset_name: {dataset_name}, episode {episode_idx}, len: {len(qpos)}')\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--dataset_dir', action='store', type=str, help='Dataset dir.', required=True)\n    parser.add_argument('--episode_idx', action='store', type=int, help='Episode index.', required=False)",
+        "type": "code",
+        "location": "/aloha_scripts/get_episode_len.py:1-32"
+    },
+    "115": {
+        "file_id": 6,
+        "content": "The code imports necessary libraries and defines a function \"main\" that takes arguments for dataset directory and episode index. It checks if the dataset exists, reads the attributes (sim and compress), retrieves qpos data, and prints the dataset name, episode index, and length of qpos data.",
+        "type": "comment"
+    },
+    "116": {
+        "file_id": 6,
+        "content": "    parser.add_argument('--ismirror', action='store_true')\n    main(vars(parser.parse_args()))",
+        "type": "code",
+        "location": "/aloha_scripts/get_episode_len.py:33-34"
+    },
+    "117": {
+        "file_id": 6,
+        "content": "This code adds an argument called \"--ismirror\" and sets its action to \"store_true\". The \"main()\" function is then called with the parsed arguments.",
+        "type": "comment"
+    },
+    "118": {
+        "file_id": 7,
+        "content": "/aloha_scripts/one_side_teleop.py",
+        "type": "filepath"
+    },
+    "119": {
+        "file_id": 7,
+        "content": "The function initializes robot arms, sets operating modes, attempts to set a gripper current limit (disabled), and prepares for teleoperation with continuous joint sync and gripper control through the 'teleop' function.",
+        "type": "summary"
+    },
+    "120": {
+        "file_id": 7,
+        "content": "import time\nimport sys\nimport IPython\ne = IPython.embed\nfrom interbotix_xs_modules.arm import InterbotixManipulatorXS\nfrom interbotix_xs_msgs.msg import JointSingleCommand\nfrom constants import MASTER2PUPPET_JOINT_FN, DT, START_ARM_POSE, MASTER_GRIPPER_JOINT_MID, PUPPET_GRIPPER_JOINT_CLOSE\nfrom robot_utils import torque_on, torque_off, move_arms, move_grippers, get_arm_gripper_positions\ndef prep_robots(master_bot, puppet_bot):\n    # reboot gripper motors, and set operating modes for all motors\n    puppet_bot.dxl.robot_reboot_motors(\"single\", \"gripper\", True)\n    puppet_bot.dxl.robot_set_operating_modes(\"group\", \"arm\", \"position\")\n    puppet_bot.dxl.robot_set_operating_modes(\"single\", \"gripper\", \"current_based_position\")\n    master_bot.dxl.robot_set_operating_modes(\"group\", \"arm\", \"position\")\n    master_bot.dxl.robot_set_operating_modes(\"single\", \"gripper\", \"position\")\n    # puppet_bot.dxl.robot_set_motor_registers(\"single\", \"gripper\", 'current_limit', 1000) # TODO(tonyzhaozh) figure out how to set this limit",
+        "type": "code",
+        "location": "/aloha_scripts/one_side_teleop.py:1-18"
+    },
+    "121": {
+        "file_id": 7,
+        "content": "This function initializes the robot by rebooting gripper motors, setting motor operating modes for all robots to position-based control, and attempts to set a current limit for one of the grippers (currently disabled due to TODO).",
+        "type": "comment"
+    },
+    "122": {
+        "file_id": 7,
+        "content": "    torque_on(puppet_bot)\n    torque_on(master_bot)\n    # move arms to starting position\n    start_arm_qpos = START_ARM_POSE[:6]\n    move_arms([master_bot, puppet_bot], [start_arm_qpos] * 2, move_time=1)\n    # move grippers to starting position\n    move_grippers([master_bot, puppet_bot], [MASTER_GRIPPER_JOINT_MID, PUPPET_GRIPPER_JOINT_CLOSE], move_time=0.5)\ndef press_to_start(master_bot):\n    # press gripper to start data collection\n    # disable torque for only gripper joint of master robot to allow user movement\n    master_bot.dxl.robot_torque_enable(\"single\", \"gripper\", False)\n    print(f'Close the gripper to start')\n    close_thresh = -1.4\n    pressed = False\n    while not pressed:\n        gripper_pos = get_arm_gripper_positions(master_bot)\n        if gripper_pos < close_thresh:\n            pressed = True\n        time.sleep(DT/10)\n    torque_off(master_bot)\n    print(f'Started!')\ndef teleop(robot_side):\n    \"\"\" A standalone function for experimenting with teleoperation. No data recording. \"\"\"\n    puppet_",
+        "type": "code",
+        "location": "/aloha_scripts/one_side_teleop.py:19-47"
+    },
+    "123": {
+        "file_id": 7,
+        "content": "This code is initializing the robot arms and grippers to their starting positions, disabling torque for the gripper joint of the master robot, waiting for the gripper to close, and then turning off the torque. The function teleop seems to be related to teleoperation experimentation without data recording.",
+        "type": "comment"
+    },
+    "124": {
+        "file_id": 7,
+        "content": "bot = InterbotixManipulatorXS(robot_model=\"vx300s\", group_name=\"arm\", gripper_name=\"gripper\", robot_name=f'puppet_{robot_side}', init_node=True)\n    master_bot = InterbotixManipulatorXS(robot_model=\"wx250s\", group_name=\"arm\", gripper_name=\"gripper\", robot_name=f'master_{robot_side}', init_node=False)\n    prep_robots(master_bot, puppet_bot)\n    press_to_start(master_bot)\n    ### Teleoperation loop\n    gripper_command = JointSingleCommand(name=\"gripper\")\n    while True:\n        # sync joint positions\n        master_state_joints = master_bot.dxl.joint_states.position[:6]\n        puppet_bot.arm.set_joint_positions(master_state_joints, blocking=False)\n        # sync gripper positions\n        master_gripper_joint = master_bot.dxl.joint_states.position[6]\n        puppet_gripper_joint_target = MASTER2PUPPET_JOINT_FN(master_gripper_joint)\n        gripper_command.cmd = puppet_gripper_joint_target\n        puppet_bot.gripper.core.pub_single.publish(gripper_command)\n        # sleep DT\n        time.sleep(DT)\nif __name__=='__main__':",
+        "type": "code",
+        "location": "/aloha_scripts/one_side_teleop.py:47-68"
+    },
+    "125": {
+        "file_id": 7,
+        "content": "This code sets up two InterbotixManipulatorXS robots and initializes them with different names. It then prepares the robots for operation, starts a teleoperation loop where it continuously syncs joint positions between the master and puppet robots, and publishes gripper commands to control the gripper's position in tandem with the arm movements. The loop runs indefinitely until interrupted.",
+        "type": "comment"
+    },
+    "126": {
+        "file_id": 7,
+        "content": "    side = sys.argv[1]\n    teleop(side)",
+        "type": "code",
+        "location": "/aloha_scripts/one_side_teleop.py:69-70"
+    },
+    "127": {
+        "file_id": 7,
+        "content": "These lines take a command-line argument, assign it to the 'side' variable, and then call the 'teleop' function with this argument.",
+        "type": "comment"
+    },
+    "128": {
+        "file_id": 8,
+        "content": "/aloha_scripts/real_env.py",
+        "type": "filepath"
+    },
+    "129": {
+        "file_id": 8,
+        "content": "This code defines a bi-manual manipulation class for real robots and a class for handling environments, including observation functions and movement control. It enables real-time visualization of bimanual teleoperation through joint poses.",
+        "type": "summary"
+    },
+    "130": {
+        "file_id": 8,
+        "content": "import time\nimport numpy as np\nimport collections\nimport matplotlib.pyplot as plt\nimport dm_env\nfrom pyquaternion import Quaternion\nfrom constants import DT, START_ARM_POSE, MASTER_GRIPPER_JOINT_NORMALIZE_FN, PUPPET_GRIPPER_JOINT_UNNORMALIZE_FN\nfrom constants import PUPPET_GRIPPER_POSITION_NORMALIZE_FN, PUPPET_GRIPPER_VELOCITY_NORMALIZE_FN\nfrom constants import PUPPET_GRIPPER_JOINT_OPEN, PUPPET_GRIPPER_JOINT_CLOSE\nfrom aloha_scripts.robot_utils import Recorder, ImageRecorder\nfrom aloha_scripts.robot_utils import setup_master_bot, setup_puppet_bot, move_arms, move_grippers\nfrom interbotix_xs_modules.arm import InterbotixManipulatorXS\nfrom interbotix_xs_msgs.msg import JointSingleCommand\nimport pyrealsense2 as rs\nimport pyagxrobots\nfrom dynamixel_client import DynamixelClient\nimport IPython\ne = IPython.embed\nclass RealEnv:\n    \"\"\"\n    Environment for real robot bi-manual manipulation\n    Action space:      [left_arm_qpos (6),             # absolute joint position\n                        left_gripper_positions (1),    # normalized gripper position (0: close, 1: open)",
+        "type": "code",
+        "location": "/aloha_scripts/real_env.py:1-26"
+    },
+    "131": {
+        "file_id": 8,
+        "content": "This code imports necessary libraries and defines a class for a real robot bi-manual manipulation environment. It includes constants, functions from other modules, and interacts with robot hardware such as InterbotixManipulatorXS and DynamixelClient. The action space consists of the left arm's joint positions, gripper position normalized to 0 or 1 (close or open), and left gripper velocities. This code is likely used for controlling a robotic system with two arms and grippers in real-world scenarios.",
+        "type": "comment"
+    },
+    "132": {
+        "file_id": 8,
+        "content": "                        right_arm_qpos (6),            # absolute joint position\n                        right_gripper_positions (1),]  # normalized gripper position (0: close, 1: open)\n    Observation space: {\"qpos\": Concat[ left_arm_qpos (6),          # absolute joint position\n                                        left_gripper_position (1),  # normalized gripper position (0: close, 1: open)\n                                        right_arm_qpos (6),         # absolute joint position\n                                        right_gripper_qpos (1)]     # normalized gripper position (0: close, 1: open)\n                        \"qvel\": Concat[ left_arm_qvel (6),         # absolute joint velocity (rad)\n                                        left_gripper_velocity (1),  # normalized gripper velocity (pos: opening, neg: closing)\n                                        right_arm_qvel (6),         # absolute joint velocity (rad)\n                                        right_gripper_qvel (1)]     # normalized gripper velocity (pos: opening, neg: closing)",
+        "type": "code",
+        "location": "/aloha_scripts/real_env.py:27-37"
+    },
+    "133": {
+        "file_id": 8,
+        "content": "Observation space defined for a robot with left and right arm joint positions, velocities, and gripper positions and velocities.",
+        "type": "comment"
+    },
+    "134": {
+        "file_id": 8,
+        "content": "                        \"images\": {\"cam_high\": (480x640x3),        # h, w, c, dtype='uint8'\n                                   \"cam_low\": (480x640x3),         # h, w, c, dtype='uint8'\n                                   \"cam_left_wrist\": (480x640x3),  # h, w, c, dtype='uint8'\n                                   \"cam_right_wrist\": (480x640x3)} # h, w, c, dtype='uint8'\n    \"\"\"\n    def __init__(self, init_node, setup_robots=True, setup_base=False):\n        self.puppet_bot_left = InterbotixManipulatorXS(robot_model=\"vx300s\", group_name=\"arm\", gripper_name=\"gripper\",\n                                                       robot_name=f'puppet_left', init_node=init_node)\n        self.puppet_bot_right = InterbotixManipulatorXS(robot_model=\"vx300s\", group_name=\"arm\", gripper_name=\"gripper\",\n                                                        robot_name=f'puppet_right', init_node=False)\n        if setup_robots:\n            self.setup_robots()\n        if setup_base:\n            self.setup_base()\n        # self.setup_t265()",
+        "type": "code",
+        "location": "/aloha_scripts/real_env.py:38-55"
+    },
+    "135": {
+        "file_id": 8,
+        "content": "This code initializes two InterbotixManipulatorXS objects, one for the left arm and one for the right arm. If setup_robots is True, it calls the setup_robots() method, and if setup_base is True, it calls the setup_base() method.",
+        "type": "comment"
+    },
+    "136": {
+        "file_id": 8,
+        "content": "        self.setup_dxl()\n        self.recorder_left = Recorder('left', init_node=False)\n        self.recorder_right = Recorder('right', init_node=False)\n        self.image_recorder = ImageRecorder(init_node=False)\n        self.gripper_command = JointSingleCommand(name=\"gripper\")\n    def setup_t265(self):\n        self.pipeline = rs.pipeline()\n        cfg = rs.config()\n        # if only pose stream is enabled, fps is higher (202 vs 30)\n        cfg.enable_stream(rs.stream.pose)\n        self.pipeline.start(cfg)\n    def setup_dxl(self):\n        self.dxl_client = DynamixelClient([1, 2], port='/dev/ttyDXL_wheels', lazy_connect=True)\n        self.wheel_r = 0.101 / 2  # 101 mm is the diameter\n        self.base_r = 0.622  # 622 mm is the distance between the two wheels\n    def setup_base(self):\n        self.tracer = pyagxrobots.pysdkugv.TracerBase()\n        self.tracer.EnableCAN()\n    def setup_robots(self):\n        setup_puppet_bot(self.puppet_bot_left)\n        setup_puppet_bot(self.puppet_bot_right)\n    def get_qpos(self):",
+        "type": "code",
+        "location": "/aloha_scripts/real_env.py:56-83"
+    },
+    "137": {
+        "file_id": 8,
+        "content": "This code initializes various objects and sets up the environment for a robot. It configures the camera, wheels, base, and robots. The `setup_t265` method initializes a real sensor pipeline for the 265 camera, enabling pose stream for higher fps. The `setup_dxl` initializes a Dynamixel client for two wheels with specified port and diameter, and calculates wheel and base radii. The `setup_base` enables CAN communication on a TracerBase object for the robot's base. The `setup_robots` sets up two puppet bots. Finally, `get_qpos` is used to retrieve joint positions from the robot.",
+        "type": "comment"
+    },
+    "138": {
+        "file_id": 8,
+        "content": "        left_qpos_raw = self.recorder_left.qpos\n        right_qpos_raw = self.recorder_right.qpos\n        left_arm_qpos = left_qpos_raw[:6]\n        right_arm_qpos = right_qpos_raw[:6]\n        left_gripper_qpos = [PUPPET_GRIPPER_POSITION_NORMALIZE_FN(left_qpos_raw[7])] # this is position not joint\n        right_gripper_qpos = [PUPPET_GRIPPER_POSITION_NORMALIZE_FN(right_qpos_raw[7])] # this is position not joint\n        return np.concatenate([left_arm_qpos, left_gripper_qpos, right_arm_qpos, right_gripper_qpos])\n    def get_qvel(self):\n        left_qvel_raw = self.recorder_left.qvel\n        right_qvel_raw = self.recorder_right.qvel\n        left_arm_qvel = left_qvel_raw[:6]\n        right_arm_qvel = right_qvel_raw[:6]\n        left_gripper_qvel = [PUPPET_GRIPPER_VELOCITY_NORMALIZE_FN(left_qvel_raw[7])]\n        right_gripper_qvel = [PUPPET_GRIPPER_VELOCITY_NORMALIZE_FN(right_qvel_raw[7])]\n        return np.concatenate([left_arm_qvel, left_gripper_qvel, right_arm_qvel, right_gripper_qvel])\n    def get_effort(self):",
+        "type": "code",
+        "location": "/aloha_scripts/real_env.py:84-101"
+    },
+    "139": {
+        "file_id": 8,
+        "content": "This code segment retrieves the joint positions, velocities, and efforts from two robotic arms. It separates the gripper position and velocity of each arm using specific normalization functions. The data is then concatenated for further processing or analysis.",
+        "type": "comment"
+    },
+    "140": {
+        "file_id": 8,
+        "content": "        left_effort_raw = self.recorder_left.effort\n        right_effort_raw = self.recorder_right.effort\n        left_robot_effort = left_effort_raw[:7]\n        right_robot_effort = right_effort_raw[:7]\n        return np.concatenate([left_robot_effort, right_robot_effort])\n    def get_images(self):\n        return self.image_recorder.get_images()\n    def get_base_vel_t265(self):\n        raise NotImplementedError\n        frames = self.pipeline.wait_for_frames()\n        pose_frame = frames.get_pose_frame()\n        pose = pose_frame.get_pose_data()\n        q1 = Quaternion(w=pose.rotation.w, x=pose.rotation.x, y=pose.rotation.y, z=pose.rotation.z)\n        rotation = -np.array(q1.yaw_pitch_roll)[0]\n        rotation_vec = np.array([np.cos(rotation), np.sin(rotation)])\n        linear_vel_vec = np.array([pose.velocity.z, pose.velocity.x])\n        is_forward = rotation_vec.dot(linear_vel_vec) > 0\n        base_linear_vel = np.sqrt(pose.velocity.z ** 2 + pose.velocity.x ** 2) * (1 if is_forward else -1)\n        base_angular_vel = pose.angular_velocity.y",
+        "type": "code",
+        "location": "/aloha_scripts/real_env.py:102-124"
+    },
+    "141": {
+        "file_id": 8,
+        "content": "This code reads the left and right robot effort, converts them to a specified format, concatenates them, and returns the result. It also retrieves images and calculates the base velocity of the robot in terms of linear and angular velocities based on the robot's pose data.",
+        "type": "comment"
+    },
+    "142": {
+        "file_id": 8,
+        "content": "        return np.array([base_linear_vel, base_angular_vel])\n    def get_base_vel(self):\n        left_vel, right_vel = self.dxl_client.read_pos_vel_cur()[1]\n        right_vel = -right_vel # right wheel is inverted\n        base_linear_vel = (left_vel + right_vel) * self.wheel_r / 2\n        base_angular_vel = (right_vel - left_vel) * self.wheel_r / self.base_r\n        return np.array([base_linear_vel, base_angular_vel])\n    def get_tracer_vel(self):\n        linear_vel, angular_vel = self.tracer.GetLinearVelocity(), self.tracer.GetAngularVelocity()\n        return np.array([linear_vel, angular_vel])\n    def set_gripper_pose(self, left_gripper_desired_pos_normalized, right_gripper_desired_pos_normalized):\n        left_gripper_desired_joint = PUPPET_GRIPPER_JOINT_UNNORMALIZE_FN(left_gripper_desired_pos_normalized)\n        self.gripper_command.cmd = left_gripper_desired_joint\n        self.puppet_bot_left.gripper.core.pub_single.publish(self.gripper_command)\n        right_gripper_desired_joint = PUPPET_GRIPPER_JOINT_UNNORMALIZE_FN(right_gripper_desired_pos_normalized)",
+        "type": "code",
+        "location": "/aloha_scripts/real_env.py:125-145"
+    },
+    "143": {
+        "file_id": 8,
+        "content": "Code snippet from \"mobile-aloha/aloha_scripts/real_env.py\" contains functions for retrieving base velocity, tracer velocity, and setting gripper pose. The get_base_vel() function calculates the linear and angular velocities of the robot's base. The get_tracer_vel() function retrieves the linear and angular velocities of a tracer object. The set_gripper_pose() function sets the desired position of the left and right grippers, normalizing the positions if necessary.",
+        "type": "comment"
+    },
+    "144": {
+        "file_id": 8,
+        "content": "        self.gripper_command.cmd = right_gripper_desired_joint\n        self.puppet_bot_right.gripper.core.pub_single.publish(self.gripper_command)\n    def _reset_joints(self):\n        reset_position = START_ARM_POSE[:6]\n        move_arms([self.puppet_bot_left, self.puppet_bot_right], [reset_position, reset_position], move_time=1)\n    def _reset_gripper(self):\n        \"\"\"Set to position mode and do position resets: first open then close. Then change back to PWM mode\"\"\"\n        move_grippers([self.puppet_bot_left, self.puppet_bot_right], [PUPPET_GRIPPER_JOINT_OPEN] * 2, move_time=0.5)\n        move_grippers([self.puppet_bot_left, self.puppet_bot_right], [PUPPET_GRIPPER_JOINT_CLOSE] * 2, move_time=1)\n    def get_observation(self, get_tracer_vel=False):\n        obs = collections.OrderedDict()\n        obs['qpos'] = self.get_qpos()\n        obs['qvel'] = self.get_qvel()\n        obs['effort'] = self.get_effort()\n        obs['images'] = self.get_images()\n        # obs['base_vel_t265'] = self.get_base_vel_t265()",
+        "type": "code",
+        "location": "/aloha_scripts/real_env.py:146-164"
+    },
+    "145": {
+        "file_id": 8,
+        "content": "This code appears to be part of a robotics application, specifically controlling the gripper and arm movements of a puppet bot. The `_reset_joints` function resets the arm joint positions, while the `_reset_gripper` function first opens and then closes the gripper. The `get_observation` function returns various observations such as joint positions, velocities, robot effort, and possibly camera images. There may be a missing line for getting the base velocity of the robot in relation to its environment (base_vel_t265).",
+        "type": "comment"
+    },
+    "146": {
+        "file_id": 8,
+        "content": "        obs['base_vel'] = self.get_base_vel()\n        if get_tracer_vel:\n            obs['tracer_vel'] = self.get_tracer_vel()\n        return obs\n    def get_reward(self):\n        return 0\n    def reset(self, fake=False):\n        if not fake:\n            # Reboot puppet robot gripper motors\n            self.puppet_bot_left.dxl.robot_reboot_motors(\"single\", \"gripper\", True)\n            self.puppet_bot_right.dxl.robot_reboot_motors(\"single\", \"gripper\", True)\n            self._reset_joints()\n            self._reset_gripper()\n        return dm_env.TimeStep(\n            step_type=dm_env.StepType.FIRST,\n            reward=self.get_reward(),\n            discount=None,\n            observation=self.get_observation())\n    def step(self, action, base_action=None, get_tracer_vel=False, get_obs=True):\n        state_len = int(len(action) / 2)\n        left_action = action[:state_len]\n        right_action = action[state_len:]\n        self.puppet_bot_left.arm.set_joint_positions(left_action[:6], blocking=False)\n        self.puppet_bot_right.arm.set_joint_positions(right_action[:6], blocking=False)",
+        "type": "code",
+        "location": "/aloha_scripts/real_env.py:165-191"
+    },
+    "147": {
+        "file_id": 8,
+        "content": "The code belongs to the \"real_env.py\" file in the \"mobile-aloha/aloha_scripts\" directory. It defines a class that handles the environment for a puppet robot, including functions for getting observations and resetting the environment. The 'get_observation' function returns a dictionary of observations such as base velocity and (optionally) tracer velocity. The 'get_reward' function always returns 0. The 'reset' function reboots the gripper motors and resets joints and grippers if not in fake mode. The 'step' function takes an action, splits it into left and right actions, sets joint positions for the puppet bot arms, and can also get observations or tracer velocity if specified.",
+        "type": "comment"
+    },
+    "148": {
+        "file_id": 8,
+        "content": "        self.set_gripper_pose(left_action[-1], right_action[-1])\n        if base_action is not None:\n            # linear_vel_limit = 1.5\n            # angular_vel_limit = 1.5\n            # base_action_linear = np.clip(base_action[0], -linear_vel_limit, linear_vel_limit)\n            # base_action_angular = np.clip(base_action[1], -angular_vel_limit, angular_vel_limit)\n            base_action_linear, base_action_angular = base_action\n            self.tracer.SetMotionCommand(linear_vel=base_action_linear, angular_vel=base_action_angular)\n        # time.sleep(DT)\n        if get_obs:\n            obs = self.get_observation(get_tracer_vel)\n        else:\n            obs = None\n        return dm_env.TimeStep(\n            step_type=dm_env.StepType.MID,\n            reward=self.get_reward(),\n            discount=None,\n            observation=obs)\ndef get_action(master_bot_left, master_bot_right):\n    action = np.zeros(14) # 6 joint + 1 gripper, for two arms\n    # Arm actions\n    action[:6] = master_bot_left.dxl.joint_states.position[:6]",
+        "type": "code",
+        "location": "/aloha_scripts/real_env.py:192-214"
+    },
+    "149": {
+        "file_id": 8,
+        "content": "The code snippet sets the gripper position and controls the robot's base movement using the provided actions. If a base action is given, it clips the linear and angular velocities to specified limits and updates the tracer's motion command. It then obtains observations (if needed) and returns a time step with the reward, discount, and observation. The get_action function initializes an action array for two arms and sets arm actions based on the provided master bot states.",
+        "type": "comment"
+    },
+    "150": {
+        "file_id": 8,
+        "content": "    action[7:7+6] = master_bot_right.dxl.joint_states.position[:6]\n    # Gripper actions\n    action[6] = MASTER_GRIPPER_JOINT_NORMALIZE_FN(master_bot_left.dxl.joint_states.position[6])\n    action[7+6] = MASTER_GRIPPER_JOINT_NORMALIZE_FN(master_bot_right.dxl.joint_states.position[6])\n    return action\n# def get_base_action():\ndef make_real_env(init_node, setup_robots=True, setup_base=False):\n    env = RealEnv(init_node, setup_robots, setup_base)\n    return env\ndef test_real_teleop():\n    \"\"\"\n    Test bimanual teleoperation and show image observations onscreen.\n    It first reads joint poses from both master arms.\n    Then use it as actions to step the environment.\n    The environment returns full observations including images.\n    An alternative approach is to have separate scripts for teleoperation and observation recording.\n    This script will result in higher fidelity (obs, action) pairs\n    \"\"\"\n    onscreen_render = True\n    render_cam = 'cam_left_wrist'\n    # source of data\n    master_bot_left = InterbotixManipulatorXS(robot_model=\"wx250s\", group_name=\"arm\", gripper_name=\"gripper\",",
+        "type": "code",
+        "location": "/aloha_scripts/real_env.py:215-246"
+    },
+    "151": {
+        "file_id": 8,
+        "content": "This code is from the \"real_env.py\" file in the \"mobile-aloha/aloha_scripts\" directory. It defines a function called make_real_env that creates an instance of RealEnv class using parameters like init_node, setup_robots, and setup_base. Another function, test_real_teleop, tests bimanual teleoperation by reading joint poses from both master arms and using them as actions to step the environment, which returns full observations including images. The onscreen_render variable determines whether the observations are shown on-screen, and render_cam specifies the camera used for observation. The code also defines the InterbotixManipulatorXS class, which represents a manipulator with an arm and a gripper.",
+        "type": "comment"
+    },
+    "152": {
+        "file_id": 8,
+        "content": "                                              robot_name=f'master_left', init_node=True)\n    master_bot_right = InterbotixManipulatorXS(robot_model=\"wx250s\", group_name=\"arm\", gripper_name=\"gripper\",\n                                               robot_name=f'master_right', init_node=False)\n    setup_master_bot(master_bot_left)\n    setup_master_bot(master_bot_right)\n    # setup the environment\n    env = make_real_env(init_node=False)\n    ts = env.reset(fake=True)\n    episode = [ts]\n    # setup visualization\n    if onscreen_render:\n        ax = plt.subplot()\n        plt_img = ax.imshow(ts.observation['images'][render_cam])\n        plt.ion()\n    for t in range(1000):\n        action = get_action(master_bot_left, master_bot_right)\n        ts = env.step(action)\n        episode.append(ts)\n        if onscreen_render:\n            plt_img.set_data(ts.observation['images'][render_cam])\n            plt.pause(DT)\n        else:\n            time.sleep(DT)\nif __name__ == '__main__':\n    test_real_teleop()",
+        "type": "code",
+        "location": "/aloha_scripts/real_env.py:247-276"
+    },
+    "153": {
+        "file_id": 8,
+        "content": "This code sets up a robotic manipulator and environment, resets the environment with fake initial state, runs a simulation loop for 1000 timesteps, visualizes the robot's actions in real-time (if onscreen_render is True), and finally calls the test_real_teleop() function if the script is run directly.",
+        "type": "comment"
+    },
+    "154": {
+        "file_id": 9,
+        "content": "/aloha_scripts/realsense_test.py",
+        "type": "filepath"
+    },
+    "155": {
+        "file_id": 9,
+        "content": "This code utilizes RealSense to capture pose data, extracts and stores it for analysis, calculates velocity, plots it, and saves as 'rs_vel.png'.",
+        "type": "summary"
+    },
+    "156": {
+        "file_id": 9,
+        "content": "import pyrealsense2 as rs\nimport time\nfrom pprint import pprint\nfrom collections import namedtuple\nfrom functools import partial\nfrom matplotlib import pyplot as plt\nattrs = [\n    'acceleration',\n    'angular_acceleration',\n    'angular_velocity',\n    'mapper_confidence',\n    'rotation',\n    'tracker_confidence',\n    'translation',\n    'velocity',\n    ]\nPose = namedtuple('Pose', attrs)\ndef main():\n    pipeline = rs.pipeline()\n    cfg = rs.config()\n    # if only pose stream is enabled, fps is higher (202 vs 30)\n    cfg.enable_stream(rs.stream.pose)\n    pipeline.start(cfg)\n    poses = []\n    z_vels = []\n    x_vels = []\n    y_vels = []\n    try:\n        print('Start!')\n        while True:\n            frames = pipeline.wait_for_frames()\n            pose_frame = frames.get_pose_frame()\n            if pose_frame:\n                pose = pose_frame.get_pose_data()\n                n = pose_frame.get_frame_number()\n                timestamp = pose_frame.get_timestamp()\n                p = Pose(*map(partial(getattr, pose), attrs))\n                z_vel = pose.velocity.z",
+        "type": "code",
+        "location": "/aloha_scripts/realsense_test.py:1-41"
+    },
+    "157": {
+        "file_id": 9,
+        "content": "The code initializes a RealSense pipeline, enables the pose stream, and starts capturing frames. It then extracts pose data from each frame, stores it in lists for further analysis, and continues to capture until interrupted.",
+        "type": "comment"
+    },
+    "158": {
+        "file_id": 9,
+        "content": "                y_vel = pose.velocity.y\n                x_vel = pose.velocity.x\n                z_vels.append(z_vel)\n                x_vels.append(x_vel)\n                y_vels.append(y_vel)\n                poses.append((n, timestamp, p))\n                if len(poses) == 1000:\n                    return\n            time.sleep(0.02)\n    finally:\n        print('End!')\n        pipeline.stop()\n        duration = (poses[-1][1]-poses[0][1])/1000\n        print(f'start: {poses[0][1]}')\n        print(f'end:   {poses[-1][1]}')\n        print(f'duration: {duration}s')\n        print(f'fps: {len(poses)/duration}')\n        plt.plot(z_vels, label='z_vel')\n        plt.plot(x_vels, label='x_vel')\n        plt.plot(y_vels, label='y_vel')\n        plt.legend()\n        plt.savefig('rs_vel.png')\n        plt.show()\nif __name__ == \"__main__\":\n    main()",
+        "type": "code",
+        "location": "/aloha_scripts/realsense_test.py:42-69"
+    },
+    "159": {
+        "file_id": 9,
+        "content": "This code seems to be part of a larger program that captures real-sense pose data, calculates velocity from the data and plots it. It appends z, x and y velocities into lists for 1000 poses before returning. After capturing data, it prints out duration and frames per second (fps), then plots the velocity data. Finally, it saves and displays the plot as 'rs_vel.png'.",
+        "type": "comment"
+    },
+    "160": {
+        "file_id": 10,
+        "content": "/aloha_scripts/record_episodes.py",
+        "type": "filepath"
+    },
+    "161": {
+        "file_id": 10,
+        "content": "This code manages four robots, sets modes and grippers, handles gripper current limit issues, initializes environment, turns off torque, prepares instances, collects data, calculates FPS, enables bots' torque, stores observation data, prepares image data for HDF5 storage, runs an episode capture task with indices and diagnostics calculations.",
+        "type": "summary"
+    },
+    "162": {
+        "file_id": 10,
+        "content": "import os\nimport time\nimport h5py\nimport argparse\nimport h5py_cache\nimport numpy as np\nfrom tqdm import tqdm\nimport cv2\nfrom constants import DT, START_ARM_POSE, TASK_CONFIGS, FPS\nfrom constants import MASTER_GRIPPER_JOINT_MID, PUPPET_GRIPPER_JOINT_CLOSE, PUPPET_GRIPPER_JOINT_OPEN\nfrom robot_utils import Recorder, ImageRecorder, get_arm_gripper_positions\nfrom robot_utils import move_arms, torque_on, torque_off, move_grippers\nfrom real_env import make_real_env, get_action\nfrom interbotix_xs_modules.arm import InterbotixManipulatorXS\nimport IPython\ne = IPython.embed\ndef opening_ceremony(master_bot_left, master_bot_right, puppet_bot_left, puppet_bot_right):\n    \"\"\" Move all 4 robots to a pose where it is easy to start demonstration \"\"\"\n    # reboot gripper motors, and set operating modes for all motors\n    puppet_bot_left.dxl.robot_reboot_motors(\"single\", \"gripper\", True)\n    puppet_bot_left.dxl.robot_set_operating_modes(\"group\", \"arm\", \"position\")\n    puppet_bot_left.dxl.robot_set_operating_modes(\"single\", \"gripper\", \"current_based_position\")",
+        "type": "code",
+        "location": "/aloha_scripts/record_episodes.py:1-27"
+    },
+    "163": {
+        "file_id": 10,
+        "content": "This code is part of a larger script that controls two master and two puppet robots in a demonstration. It starts by rebooting the gripper motors and setting the operating modes for all motors on the puppet robot to prepare for the demonstration. The opening ceremony function ensures all robots are ready before starting the demonstration.",
+        "type": "comment"
+    },
+    "164": {
+        "file_id": 10,
+        "content": "    master_bot_left.dxl.robot_set_operating_modes(\"group\", \"arm\", \"position\")\n    master_bot_left.dxl.robot_set_operating_modes(\"single\", \"gripper\", \"position\")\n    # puppet_bot_left.dxl.robot_set_motor_registers(\"single\", \"gripper\", 'current_limit', 1000) # TODO(tonyzhaozh) figure out how to set this limit\n    puppet_bot_right.dxl.robot_reboot_motors(\"single\", \"gripper\", True)\n    puppet_bot_right.dxl.robot_set_operating_modes(\"group\", \"arm\", \"position\")\n    puppet_bot_right.dxl.robot_set_operating_modes(\"single\", \"gripper\", \"current_based_position\")\n    master_bot_right.dxl.robot_set_operating_modes(\"group\", \"arm\", \"position\")\n    master_bot_right.dxl.robot_set_operating_modes(\"single\", \"gripper\", \"position\")\n    # puppet_bot_left.dxl.robot_set_motor_registers(\"single\", \"gripper\", 'current_limit', 1000) # TODO(tonyzhaozh) figure out how to set this limit\n    torque_on(puppet_bot_left)\n    torque_on(master_bot_left)\n    torque_on(puppet_bot_right)\n    torque_on(master_bot_right)\n    # move arms to starting position",
+        "type": "code",
+        "location": "/aloha_scripts/record_episodes.py:28-44"
+    },
+    "165": {
+        "file_id": 10,
+        "content": "This code sets the operating modes and activates motors for robotic arms, initializes gripper modes, and moves the arms to their starting positions. The comment suggests there is an unresolved issue with setting the current limit on one of the grippers.",
+        "type": "comment"
+    },
+    "166": {
+        "file_id": 10,
+        "content": "    start_arm_qpos = START_ARM_POSE[:6]\n    move_arms([master_bot_left, puppet_bot_left, master_bot_right, puppet_bot_right], [start_arm_qpos] * 4, move_time=1.5)\n    # move grippers to starting position\n    move_grippers([master_bot_left, puppet_bot_left, master_bot_right, puppet_bot_right], [MASTER_GRIPPER_JOINT_MID, PUPPET_GRIPPER_JOINT_CLOSE] * 2, move_time=0.5)\n    # press gripper to start data collection\n    # disable torque for only gripper joint of master robot to allow user movement\n    master_bot_left.dxl.robot_torque_enable(\"single\", \"gripper\", False)\n    master_bot_right.dxl.robot_torque_enable(\"single\", \"gripper\", False)\n    print(f'Close the gripper to start')\n    close_thresh = -1.4\n    pressed = False\n    while not pressed:\n        gripper_pos_left = get_arm_gripper_positions(master_bot_left)\n        gripper_pos_right = get_arm_gripper_positions(master_bot_right)\n        if (gripper_pos_left < close_thresh) and (gripper_pos_right < close_thresh):\n            pressed = True\n        time.sleep(DT/10)",
+        "type": "code",
+        "location": "/aloha_scripts/record_episodes.py:45-63"
+    },
+    "167": {
+        "file_id": 10,
+        "content": "Moves the arms to a starting position, sets grippers to start position, enables gripper movement for master robot while disabling torque, prints message to close gripper, checks gripper positions until both are below a threshold, then exits loop.",
+        "type": "comment"
+    },
+    "168": {
+        "file_id": 10,
+        "content": "    torque_off(master_bot_left)\n    torque_off(master_bot_right)\n    print(f'Started!')\ndef capture_one_episode(dt, max_timesteps, camera_names, dataset_dir, dataset_name, overwrite):\n    print(f'Dataset name: {dataset_name}')\n    # source of data\n    master_bot_left = InterbotixManipulatorXS(robot_model=\"wx250s\", group_name=\"arm\", gripper_name=\"gripper\",\n                                              robot_name=f'master_left', init_node=True)\n    master_bot_right = InterbotixManipulatorXS(robot_model=\"wx250s\", group_name=\"arm\", gripper_name=\"gripper\",\n                                               robot_name=f'master_right', init_node=False)\n    env = make_real_env(init_node=False, setup_robots=False)\n    # saving dataset\n    if not os.path.isdir(dataset_dir):\n        os.makedirs(dataset_dir)\n    dataset_path = os.path.join(dataset_dir, dataset_name)\n    if os.path.isfile(dataset_path) and not overwrite:\n        print(f'Dataset already exist at \\n{dataset_path}\\nHint: set overwrite to True.')\n        exit()",
+        "type": "code",
+        "location": "/aloha_scripts/record_episodes.py:64-85"
+    },
+    "169": {
+        "file_id": 10,
+        "content": "This code snippet initializes the environment and robots for capturing one episode of data. It first turns off torque for both master bots, prints the dataset name, creates two InterbotixManipulatorXS instances for left and right master bots, and sets up a real environment without nodes or setup robots. It then checks if the specified dataset directory exists and creates it if not. If the dataset file already exists and overwrite is set to False, it prints a hint and exits.",
+        "type": "comment"
+    },
+    "170": {
+        "file_id": 10,
+        "content": "    # move all 4 robots to a starting pose where it is easy to start teleoperation, then wait till both gripper closed\n    opening_ceremony(master_bot_left, master_bot_right, env.puppet_bot_left, env.puppet_bot_right)\n    # Data collection\n    ts = env.reset(fake=True)\n    timesteps = [ts]\n    actions = []\n    actual_dt_history = []\n    time0 = time.time()\n    DT = 1 / FPS\n    for t in tqdm(range(max_timesteps)):\n        t0 = time.time() #\n        action = get_action(master_bot_left, master_bot_right)\n        t1 = time.time() #\n        ts = env.step(action)\n        t2 = time.time() #\n        timesteps.append(ts)\n        actions.append(action)\n        actual_dt_history.append([t0, t1, t2])\n        time.sleep(max(0, DT - (time.time() - t0)))\n    print(f'Avg fps: {max_timesteps / (time.time() - time0)}')\n    # Torque on both master bots\n    torque_on(master_bot_left)\n    torque_on(master_bot_right)\n    # Open puppet grippers\n    env.puppet_bot_left.dxl.robot_set_operating_modes(\"single\", \"gripper\", \"position\")\n    env.puppet_bot_right.dxl.robot_set_operating_modes(\"single\", \"gripper\", \"position\")",
+        "type": "code",
+        "location": "/aloha_scripts/record_episodes.py:87-114"
+    },
+    "171": {
+        "file_id": 10,
+        "content": "This code sets up the environment for data collection, performs an \"opening_ceremony\" to position robots and waits until the gripper is closed. It collects data for a specific number of timesteps, calculates average FPS, enables torque on master bots, and opens puppet grippers.",
+        "type": "comment"
+    },
+    "172": {
+        "file_id": 10,
+        "content": "    move_grippers([env.puppet_bot_left, env.puppet_bot_right], [PUPPET_GRIPPER_JOINT_OPEN] * 2, move_time=0.5)\n    freq_mean = print_dt_diagnosis(actual_dt_history)\n    if freq_mean < 30:\n        print(f'\\n\\nfreq_mean is {freq_mean}, lower than 30, re-collecting... \\n\\n\\n\\n')\n        return False\n    \"\"\"\n    For each timestep:\n    observations\n    - images\n        - cam_high          (480, 640, 3) 'uint8'\n        - cam_low           (480, 640, 3) 'uint8'\n        - cam_left_wrist    (480, 640, 3) 'uint8'\n        - cam_right_wrist   (480, 640, 3) 'uint8'\n    - qpos                  (14,)         'float64'\n    - qvel                  (14,)         'float64'\n    action                  (14,)         'float64'\n    base_action             (2,)          'float64'\n    \"\"\"\n    data_dict = {\n        '/observations/qpos': [],\n        '/observations/qvel': [],\n        '/observations/effort': [],\n        '/action': [],\n        '/base_action': [],\n        # '/base_action_t265': [],\n    }\n    for cam_name in camera_names:\n        data_dict[f'/observations/images/{cam_name}'] = []",
+        "type": "code",
+        "location": "/aloha_scripts/record_episodes.py:115-146"
+    },
+    "173": {
+        "file_id": 10,
+        "content": "The code starts by moving grippers to an open position and checks the frequency mean of dt_history. If it's below 30, it prints a message and returns False. Then, for each timestep, the code creates a data dictionary with observation types (qpos, qvel, effort), action, base_action, and various camera images as keys.",
+        "type": "comment"
+    },
+    "174": {
+        "file_id": 10,
+        "content": "    # len(action): max_timesteps, len(time_steps): max_timesteps + 1\n    while actions:\n        action = actions.pop(0)\n        ts = timesteps.pop(0)\n        data_dict['/observations/qpos'].append(ts.observation['qpos'])\n        data_dict['/observations/qvel'].append(ts.observation['qvel'])\n        data_dict['/observations/effort'].append(ts.observation['effort'])\n        data_dict['/action'].append(action)\n        data_dict['/base_action'].append(ts.observation['base_vel'])\n        # data_dict['/base_action_t265'].append(ts.observation['base_vel_t265'])\n        for cam_name in camera_names:\n            data_dict[f'/observations/images/{cam_name}'].append(ts.observation['images'][cam_name])\n    # plot /base_action vs /base_action_t265\n    # import matplotlib.pyplot as plt\n    # plt.plot(np.array(data_dict['/base_action'])[:, 0], label='base_action_linear')\n    # plt.plot(np.array(data_dict['/base_action'])[:, 1], label='base_action_angular')\n    # plt.plot(np.array(data_dict['/base_action_t265'])[:, 0], '--', label='base_action_t265_linear')",
+        "type": "code",
+        "location": "/aloha_scripts/record_episodes.py:148-165"
+    },
+    "175": {
+        "file_id": 10,
+        "content": "The code reads actions from a list and corresponding timesteps, appending observation data such as qpos, qvel, effort, base action, and images to a dictionary. It does not plot /base_action vs /base_action_t265 but provides the structure for doing so if needed.",
+        "type": "comment"
+    },
+    "176": {
+        "file_id": 10,
+        "content": "    # plt.plot(np.array(data_dict['/base_action_t265'])[:, 1], '--', label='base_action_t265_angular')\n    # plt.legend()\n    # plt.savefig('record_episodes_vel_debug.png', dpi=300)\n    COMPRESS = True\n    if COMPRESS:\n        # JPEG compression\n        t0 = time.time()\n        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 50] # tried as low as 20, seems fine\n        compressed_len = []\n        for cam_name in camera_names:\n            image_list = data_dict[f'/observations/images/{cam_name}']\n            compressed_list = []\n            compressed_len.append([])\n            for image in image_list:\n                result, encoded_image = cv2.imencode('.jpg', image, encode_param) # 0.02 sec # cv2.imdecode(encoded_image, 1)\n                compressed_list.append(encoded_image)\n                compressed_len[-1].append(len(encoded_image))\n            data_dict[f'/observations/images/{cam_name}'] = compressed_list\n        print(f'compression: {time.time() - t0:.2f}s')\n        # pad so it has same length\n        t0 = time.time()",
+        "type": "code",
+        "location": "/aloha_scripts/record_episodes.py:166-189"
+    },
+    "177": {
+        "file_id": 10,
+        "content": "This code is compressing images from a data dictionary using JPEG compression with a quality level of 50. It calculates the size of each compressed image and stores it in the same dictionary, overwriting the original images. The time taken for compression is also recorded.",
+        "type": "comment"
+    },
+    "178": {
+        "file_id": 10,
+        "content": "        compressed_len = np.array(compressed_len)\n        padded_size = compressed_len.max()\n        for cam_name in camera_names:\n            compressed_image_list = data_dict[f'/observations/images/{cam_name}']\n            padded_compressed_image_list = []\n            for compressed_image in compressed_image_list:\n                padded_compressed_image = np.zeros(padded_size, dtype='uint8')\n                image_len = len(compressed_image)\n                padded_compressed_image[:image_len] = compressed_image\n                padded_compressed_image_list.append(padded_compressed_image)\n            data_dict[f'/observations/images/{cam_name}'] = padded_compressed_image_list\n        print(f'padding: {time.time() - t0:.2f}s')\n    # HDF5\n    t0 = time.time()\n    with h5py.File(dataset_path + '.hdf5', 'w', rdcc_nbytes=1024**2*2) as root:\n        root.attrs['sim'] = False\n        root.attrs['compress'] = COMPRESS\n        obs = root.create_group('observations')\n        image = obs.create_group('images')\n        for cam_name in camera_names:",
+        "type": "code",
+        "location": "/aloha_scripts/record_episodes.py:190-210"
+    },
+    "179": {
+        "file_id": 10,
+        "content": "This code pads the compressed image data to a maximum length, then creates and saves an HDF5 file with observation groups including image groups for each camera. This prepares the data for saving to disk in an efficient format.",
+        "type": "comment"
+    },
+    "180": {
+        "file_id": 10,
+        "content": "            if COMPRESS:\n                _ = image.create_dataset(cam_name, (max_timesteps, padded_size), dtype='uint8',\n                                         chunks=(1, padded_size), )\n            else:\n                _ = image.create_dataset(cam_name, (max_timesteps, 480, 640, 3), dtype='uint8',\n                                         chunks=(1, 480, 640, 3), )\n        _ = obs.create_dataset('qpos', (max_timesteps, 14))\n        _ = obs.create_dataset('qvel', (max_timesteps, 14))\n        _ = obs.create_dataset('effort', (max_timesteps, 14))\n        _ = root.create_dataset('action', (max_timesteps, 14))\n        _ = root.create_dataset('base_action', (max_timesteps, 2))\n        # _ = root.create_dataset('base_action_t265', (max_timesteps, 2))\n        for name, array in data_dict.items():\n            root[name][...] = array\n        if COMPRESS:\n            _ = root.create_dataset('compress_len', (len(camera_names), max_timesteps))\n            root['/compress_len'][...] = compressed_len\n    print(f'Saving: {time.time() - t0:.1f} secs')",
+        "type": "code",
+        "location": "/aloha_scripts/record_episodes.py:211-231"
+    },
+    "181": {
+        "file_id": 10,
+        "content": "This code creates datasets for image data, qpos, qvel, effort, and action. It also creates a compress_len dataset if COMPRESS is True. The code then populates the created datasets with corresponding data from data_dict and prints the time taken to save the file.",
+        "type": "comment"
+    },
+    "182": {
+        "file_id": 10,
+        "content": "    return True\ndef main(args):\n    task_config = TASK_CONFIGS[args['task_name']]\n    dataset_dir = task_config['dataset_dir']\n    max_timesteps = task_config['episode_len']\n    camera_names = task_config['camera_names']\n    if args['episode_idx'] is not None:\n        episode_idx = args['episode_idx']\n    else:\n        episode_idx = get_auto_index(dataset_dir)\n    overwrite = True\n    dataset_name = f'episode_{episode_idx}'\n    print(dataset_name + '\\n')\n    while True:\n        is_healthy = capture_one_episode(DT, max_timesteps, camera_names, dataset_dir, dataset_name, overwrite)\n        if is_healthy:\n            break\ndef get_auto_index(dataset_dir, dataset_name_prefix = '', data_suffix = 'hdf5'):\n    max_idx = 1000\n    if not os.path.isdir(dataset_dir):\n        os.makedirs(dataset_dir)\n    for i in range(max_idx+1):\n        if not os.path.isfile(os.path.join(dataset_dir, f'{dataset_name_prefix}episode_{i}.{data_suffix}')):\n            return i\n    raise Exception(f\"Error getting auto index, or more than {max_idx} episodes\")",
+        "type": "code",
+        "location": "/aloha_scripts/record_episodes.py:233-263"
+    },
+    "183": {
+        "file_id": 10,
+        "content": "The function `main` runs an episode capture task repeatedly until it successfully captures a healthy episode. It uses the `get_auto_index` function to automatically assign an index to the dataset if no episode index is provided. The captured episodes are saved in the specified dataset directory with a naming convention \"episode_N\" where N represents the index of the episode.",
+        "type": "comment"
+    },
+    "184": {
+        "file_id": 10,
+        "content": "def print_dt_diagnosis(actual_dt_history):\n    actual_dt_history = np.array(actual_dt_history)\n    get_action_time = actual_dt_history[:, 1] - actual_dt_history[:, 0]\n    step_env_time = actual_dt_history[:, 2] - actual_dt_history[:, 1]\n    total_time = actual_dt_history[:, 2] - actual_dt_history[:, 0]\n    dt_mean = np.mean(total_time)\n    dt_std = np.std(total_time)\n    freq_mean = 1 / dt_mean\n    print(f'Avg freq: {freq_mean:.2f} Get action: {np.mean(get_action_time):.3f} Step env: {np.mean(step_env_time):.3f}')\n    return freq_mean\ndef debug():\n    print(f'====== Debug mode ======')\n    recorder = Recorder('right', is_debug=True)\n    image_recorder = ImageRecorder(init_node=False, is_debug=True)\n    while True:\n        time.sleep(1)\n        recorder.print_diagnostics()\n        image_recorder.print_diagnostics()\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--task_name', action='store', type=str, help='Task name.', required=True)\n    parser.add_argument('--episode_idx', action='store', type=int, help='Episode index.', default=None, required=False)",
+        "type": "code",
+        "location": "/aloha_scripts/record_episodes.py:266-290"
+    },
+    "185": {
+        "file_id": 10,
+        "content": "The code defines a function `print_dt_diagnosis` that calculates average frequency, mean action time, and mean environment step time from a given array of data. It also includes the `debug()` function which enters into an infinite loop and continuously prints diagnostics using the `Recorder` and `ImageRecorder` classes. The main part of the code uses argparse to accept task name and episode index as arguments.",
+        "type": "comment"
+    },
+    "186": {
+        "file_id": 10,
+        "content": "    main(vars(parser.parse_args())) # TODO\n    # debug()",
+        "type": "code",
+        "location": "/aloha_scripts/record_episodes.py:291-292"
+    },
+    "187": {
+        "file_id": 10,
+        "content": "This code is calling the main function with the arguments parsed by the parser.parse_args() method, and then it is in a TODO section which means it needs further implementation or attention.",
+        "type": "comment"
+    },
+    "188": {
+        "file_id": 11,
+        "content": "/aloha_scripts/replay_and_record_episodes.py",
+        "type": "filepath"
+    },
+    "189": {
+        "file_id": 11,
+        "content": "This code imports libraries, stores and replay datasets, smooths base_actions, tracks time, steps environment, appends observations to lists, generates plots, and saves smoothed data with \"_replayed.hdf5\" added.",
+        "type": "summary"
+    },
+    "190": {
+        "file_id": 11,
+        "content": "import os\nimport h5py\nimport numpy as np\nfrom robot_utils import move_grippers, calibrate_linear_vel, smooth_base_action, postprocess_base_action\nimport argparse\nimport matplotlib.pyplot as plt\nfrom real_env import make_real_env\nfrom constants import JOINT_NAMES, PUPPET_GRIPPER_JOINT_OPEN, fps\nimport time\nimport IPython\ne = IPython.embed\nSTATE_NAMES = JOINT_NAMES + [\"gripper\", 'left_finger', 'right_finger']\ndef store_new_dataset(input_dataset_path, output_dataset_path, obs_wheels, obs_tracer):\n    # Check if output path exists\n    if os.path.exists(output_dataset_path):\n        print(f\"The file {output_dataset_path} already exists. Exiting...\")\n        return\n    # Load the uncompressed dataset\n    with h5py.File(input_dataset_path, 'r') as infile:\n        # Create the replayed dataset\n        with h5py.File(output_dataset_path, 'w') as outfile:\n            outfile.attrs['sim'] = infile.attrs['sim']\n            outfile.attrs['compress'] = True\n            # Copy non-image data directly\n            for key in infile.keys():",
+        "type": "code",
+        "location": "/aloha_scripts/replay_and_record_episodes.py:1-31"
+    },
+    "191": {
+        "file_id": 11,
+        "content": "The code imports necessary libraries and defines a function to store a new dataset. It checks if the output path already exists, loads an uncompressed dataset from input_dataset_path, creates a replayed dataset at output_dataset_path, and copies non-image data directly.",
+        "type": "comment"
+    },
+    "192": {
+        "file_id": 11,
+        "content": "                outfile.copy(infile[key], key)\n            max_timesteps = infile['action'].shape[0]\n            _ = outfile.create_dataset('obs_wheels', (max_timesteps, 2))\n            _ = outfile.create_dataset('obs_tracer', (max_timesteps, 2))\n            outfile['obs_wheels'][()] = obs_wheels\n            outfile['obs_tracer'][()] = obs_tracer\n    print(f\"Replayed dataset saved to {output_dataset_path}\")\ndef main(args):\n    dataset_dir = args['dataset_dir']\n    episode_idx = args['episode_idx']\n    dataset_name = f'episode_{episode_idx}'\n    dataset_path = os.path.join(dataset_dir, dataset_name + '.hdf5')\n    dataset_new_path = os.path.join(dataset_dir, dataset_name + '_replayed.hdf5')\n    if not os.path.isfile(dataset_path):\n        print(f'Dataset does not exist at \\n{dataset_path}\\n')\n        exit()\n    with h5py.File(dataset_path, 'r') as root:\n        actions = root['/action'][()]\n        base_actions = root['/base_action'][()]\n    env = make_real_env(init_node=True, setup_base=True)\n    env.reset()",
+        "type": "code",
+        "location": "/aloha_scripts/replay_and_record_episodes.py:32-60"
+    },
+    "193": {
+        "file_id": 11,
+        "content": "This code reads a dataset, replayed it, and saves it to a new path. It checks if the original dataset exists before proceeding. The main function takes in arguments for dataset directory and episode index, and creates new dataset paths. It opens the original dataset as a read-only HDF5 file, extracts action and base_action data, initializes an environment, resets it, and then saves the replayed dataset to a new path with the same name but appended with \"_replayed.hdf5\". Finally, it prints a message confirming the saved location of the replayed dataset.",
+        "type": "comment"
+    },
+    "194": {
+        "file_id": 11,
+        "content": "    # base_actions = smooth_base_action(base_actions)\n    obs_wheels = []\n    obs_tracer = []\n    offset = 0\n    scale = 1\n    apply_actions = actions\n    apply_base_actions = base_actions[offset:] * scale\n    DT = 1 / fps\n    for action, base_action in zip(apply_actions, apply_base_actions):\n        time1 = time.time()\n        # base_action = calibrate_linear_vel(base_action, c=0.19)\n        # base_action = postprocess_base_action(base_action)\n        ts = env.step(action, base_action, get_tracer_vel=True)\n        obs_wheels.append(ts.observation['base_vel'])\n        obs_tracer.append(ts.observation['tracer_vel'])\n        time.sleep(max(0, DT - (time.time() - time1)))\n    obs_wheels = np.array(obs_wheels)\n    obs_tracer = np.array(obs_tracer)\n    store_new_dataset(dataset_path, dataset_new_path, obs_wheels, obs_tracer)\n    plt.plot(base_actions[:, 0], label='action_linear')\n    plt.plot(base_actions[:, 1], label='action_angular')\n    plt.plot(obs_wheels[:, 0], '--', label='obs_wheels_linear')\n    plt.plot(obs_wheels[:, 1], '--', label='obs_wheels_angular')",
+        "type": "code",
+        "location": "/aloha_scripts/replay_and_record_episodes.py:61-87"
+    },
+    "195": {
+        "file_id": 11,
+        "content": "In this code block, the base_actions are smoothed and the obs_wheels and obs_tracer lists are initialized. Then, a for loop iterates over the apply_actions and apply_base_actions. The time1 variable is used to track execution time, and the env.step() function is called with both actions. The resulting observations (obs_wheels and obs_tracer) are appended to their respective lists. Finally, a plot is generated for visualization purposes using matplotlib.",
+        "type": "comment"
+    },
+    "196": {
+        "file_id": 11,
+        "content": "    plt.plot(obs_tracer[:, 0], '-.', label='obs_tracer_linear')\n    plt.plot(obs_tracer[:, 1], '-.', label='obs_tracer_angular')\n    plt.legend()\n    plt.savefig('replay_and_record_episodes_vel_debug.png', dpi=300)\n    move_grippers([env.puppet_bot_left, env.puppet_bot_right], [PUPPET_GRIPPER_JOINT_OPEN] * 2, move_time=0.5)  # open\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--dataset_dir', action='store', type=str, help='Dataset dir.', required=True)\n    parser.add_argument('--episode_idx', action='store', type=int, help='Episode index.', required=False)\n    main(vars(parser.parse_args()))",
+        "type": "code",
+        "location": "/aloha_scripts/replay_and_record_episodes.py:88-101"
+    },
+    "197": {
+        "file_id": 11,
+        "content": "This code plots and saves two observations from the tracer for linear and angular movements, then opens grippers. It takes dataset directory and episode index as arguments, and calls main function after parsing arguments.",
+        "type": "comment"
+    },
+    "198": {
+        "file_id": 12,
+        "content": "/aloha_scripts/replay_episodes.py",
+        "type": "filepath"
+    },
+    "199": {
+        "file_id": 12,
+        "content": "This code reads data, initializes an actuator network, processes input, predicts output, visualizes action angular values, simulates a real environment, measures wheel/tracer velocities, calculates FPS, and plots/saves linear & angular velocity figures with command line args.",
+        "type": "summary"
+    }
+}

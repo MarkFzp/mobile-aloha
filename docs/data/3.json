@@ -1,0 +1,142 @@
+{
+    "300": {
+        "file_id": 24,
+        "content": "/launch/4arms_teleop.launch",
+        "type": "filepath"
+    },
+    "301": {
+        "file_id": 24,
+        "content": "The launch file configures a 4-arm robot for teleoperation, including camera streaming with auto-focus and exposure settings for left and right wrist views on a mobile robot.",
+        "type": "summary"
+    },
+    "302": {
+        "file_id": 24,
+        "content": "<launch>\n  <arg name=\"robot_model_master\"                default=\"wx250s\"/>\n  <arg name=\"robot_model_puppet\"                default=\"vx300s\"/>\n  <arg name=\"base_link_master\"                  default=\"base_link\"/>\n  <arg name=\"base_link_puppet\"                  default=\"base_link\"/>\n  <arg name=\"master_modes_left\"                 default=\"$(find aloha)/config/master_modes_left.yaml\"/>\n  <arg name=\"puppet_modes_left\"                 default=\"$(find aloha)/config/puppet_modes_left.yaml\"/>\n  <arg name=\"master_modes_right\"                default=\"$(find aloha)/config/master_modes_right.yaml\"/>\n  <arg name=\"puppet_modes_right\"                default=\"$(find aloha)/config/puppet_modes_right.yaml\"/>\n  <arg name=\"launch_driver\"                     default=\"true\"/>\n  <arg name=\"use_sim\"                           default=\"false\"/>\n  <arg name=\"robot_name_master_left\"            value=\"master_left\"/>\n  <arg name=\"robot_name_puppet_left\"            value=\"puppet_left\"/>\n  <arg name=\"robot_name_master_right\"           value=\"master_right\"/>",
+        "type": "code",
+        "location": "/launch/4arms_teleop.launch:1-19"
+    },
+    "303": {
+        "file_id": 24,
+        "content": "This launch file sets default values for various arguments related to robot models, modes, and names. It uses the Aloha package's configuration files for different robot parts and allows launching the driver script. The \"use_sim\" argument determines if simulation is being used or not.",
+        "type": "comment"
+    },
+    "304": {
+        "file_id": 24,
+        "content": "  <arg name=\"robot_name_puppet_right\"           value=\"puppet_right\"/>\n  <include if=\"$(arg launch_driver)\" file=\"$(find interbotix_xsarm_control)/launch/xsarm_control.launch\">\n    <arg name=\"robot_model\"                       value=\"$(arg robot_model_master)\"/>\n    <arg name=\"robot_name\"                        value=\"$(arg robot_name_master_left)\"/>\n    <arg name=\"base_link_frame\"                   value=\"$(arg base_link_master)\"/>\n    <arg name=\"use_world_frame\"                   value=\"false\"/>\n    <arg name=\"use_rviz\"                          value=\"false\"/>\n    <arg name=\"mode_configs\"                      value=\"$(arg master_modes_left)\"/>\n    <arg name=\"use_sim\"                           value=\"$(arg use_sim)\"/>\n  </include>\n  <include if=\"$(arg launch_driver)\" file=\"$(find interbotix_xsarm_control)/launch/xsarm_control.launch\">\n    <arg name=\"robot_model\"                       value=\"$(arg robot_model_master)\"/>\n    <arg name=\"robot_name\"                        value=\"$(arg robot_name_master_right)\"/>",
+        "type": "code",
+        "location": "/launch/4arms_teleop.launch:20-35"
+    },
+    "305": {
+        "file_id": 24,
+        "content": "This code includes the \"interbotix_xsarm_control\" launch file twice, once for each arm of the robot. It sets various arguments such as \"robot_model\", \"robot_name\", and \"base_link_frame\" for both arms, depending on whether the \"launch_driver\" argument is set or not.",
+        "type": "comment"
+    },
+    "306": {
+        "file_id": 24,
+        "content": "    <arg name=\"base_link_frame\"                   value=\"$(arg base_link_master)\"/>\n    <arg name=\"use_world_frame\"                   value=\"false\"/>\n    <arg name=\"use_rviz\"                          value=\"false\"/>\n    <arg name=\"mode_configs\"                      value=\"$(arg master_modes_right)\"/>\n    <arg name=\"use_sim\"                           value=\"$(arg use_sim)\"/>\n  </include>\n  <include if=\"$(arg launch_driver)\" file=\"$(find interbotix_xsarm_control)/launch/xsarm_control.launch\">\n    <arg name=\"robot_model\"                       value=\"$(arg robot_model_puppet)\"/>\n    <arg name=\"robot_name\"                        value=\"$(arg robot_name_puppet_left)\"/>\n    <arg name=\"base_link_frame\"                   value=\"$(arg base_link_puppet)\"/>\n    <arg name=\"use_world_frame\"                   value=\"false\"/>\n    <arg name=\"use_rviz\"                          value=\"false\"/>\n    <arg name=\"mode_configs\"                      value=\"$(arg puppet_modes_left)\"/>\n    <arg name=\"use_sim\"                           value=\"$(arg use_sim)\"/>",
+        "type": "code",
+        "location": "/launch/4arms_teleop.launch:36-51"
+    },
+    "307": {
+        "file_id": 24,
+        "content": "This code includes launch files for a 4 arms robot and another one for the left arm of the robot. It sets up various arguments like robot model, base link frame, use world frame, use RViz, mode configurations, and use simulation. The included files are based on conditional statements like \"launch_driver\" and \"use_sim\".",
+        "type": "comment"
+    },
+    "308": {
+        "file_id": 24,
+        "content": "  </include>\n  <include if=\"$(arg launch_driver)\" file=\"$(find interbotix_xsarm_control)/launch/xsarm_control.launch\">\n    <arg name=\"robot_model\"                       value=\"$(arg robot_model_puppet)\"/>\n    <arg name=\"robot_name\"                        value=\"$(arg robot_name_puppet_right)\"/>\n    <arg name=\"base_link_frame\"                   value=\"$(arg base_link_puppet)\"/>\n    <arg name=\"use_world_frame\"                   value=\"false\"/>\n    <arg name=\"use_rviz\"                          value=\"false\"/>\n    <arg name=\"mode_configs\"                      value=\"$(arg puppet_modes_right)\"/>\n    <arg name=\"use_sim\"                           value=\"$(arg use_sim)\"/>\n  </include>\n  <node\n    name=\"master_left_transform_broadcaster\"\n    pkg=\"tf2_ros\"\n    type=\"static_transform_publisher\"\n    args=\"0 -0.25 0 0 0 0 /world /$(arg robot_name_master_left)/base_link\"/>\n   <node\n    name=\"master_right_transform_broadcaster\"\n    pkg=\"tf2_ros\"\n    type=\"static_transform_publisher\"\n    args=\"0 -0.25 0 0 0 0 /world /$(arg robot_name_master_right)/base_link\"/>",
+        "type": "code",
+        "location": "/launch/4arms_teleop.launch:52-75"
+    },
+    "309": {
+        "file_id": 24,
+        "content": "This code includes a launch file for a 4 arms robot teleoperation and sets up transforms for the left and right master nodes using tf2_ros package. It also includes another launch file based on the \"launch_driver\" argument, configures robot parameters, and handles simulation mode if enabled.",
+        "type": "comment"
+    },
+    "310": {
+        "file_id": 24,
+        "content": "  <node\n    name=\"puppet_left_transform_broadcaster\"\n    pkg=\"tf2_ros\"\n    type=\"static_transform_publisher\"\n    args=\"0 0.25 0 0 0 0 /world /$(arg robot_name_puppet_left)/base_link\"/>\n  <node\n    name=\"puppet_right_transform_broadcaster\"\n    pkg=\"tf2_ros\"\n    type=\"static_transform_publisher\"\n    args=\"0 0.25 0 0 0 0 /world /$(arg robot_name_puppet_right)/base_link\"/>\n  <node name=\"usb_cam_high\" pkg=\"usb_cam\" type=\"usb_cam_node\" output=\"screen\" >\n    <param name=\"video_device\" value=\"/dev/CAM_HIGH\" />\n    <param name=\"framerate\" value=\"60\" />\n    <param name=\"image_width\" value=\"640\" />\n    <param name=\"image_height\" value=\"480\" />\n    <param name=\"pixel_format\" value=\"yuyv\" />\n    <param name=\"camera_frame_id\" value=\"usb_cam\" />\n    <param name=\"io_method\" value=\"mmap\"/>\n    <param name=\"autofocus\" value=\"false\"/>\n    <param name=\"focus\" value=\"5\"/>\n    <param name=\"autoexposure\" value=\"true\"/>\n  </node>\n  <!-- <node name=\"usb_cam_low\" pkg=\"usb_cam\" type=\"usb_cam_node\" output=\"screen\" >\n    <param name=\"video_device\" value=\"/dev/CAM_LOW\" />",
+        "type": "code",
+        "location": "/launch/4arms_teleop.launch:78-104"
+    },
+    "311": {
+        "file_id": 24,
+        "content": "This code launches various nodes for transform broadcasting, camera streaming, and potentially another camera stream. The \"puppet_left_transform_broadcaster\" and \"puppet_right_transform_broadcaster\" nodes set up static transforms between base_link frames of the robot named as arguments. The \"usb_cam_high\" node initializes a camera with specified parameters like framerate, image resolution, pixel format, camera frame id, etc., and potentially another camera stream is also initiated in the commented section.",
+        "type": "comment"
+    },
+    "312": {
+        "file_id": 24,
+        "content": "    <param name=\"framerate\" value=\"60\" />\n    <param name=\"image_width\" value=\"640\" />\n    <param name=\"image_height\" value=\"480\" />\n    <param name=\"pixel_format\" value=\"yuyv\" />\n    <param name=\"camera_frame_id\" value=\"usb_cam\" />\n    <param name=\"io_method\" value=\"mmap\"/>\n    <param name=\"autofocus\" value=\"false\"/>\n    <param name=\"focus\" value=\"35\"/>\n    <param name=\"autoexposure\" value=\"true\"/>\n  </node> -->\n  <node name=\"usb_cam_left_wrist\" pkg=\"usb_cam\" type=\"usb_cam_node\" output=\"screen\" >\n    <param name=\"video_device\" value=\"/dev/CAM_LEFT_WRIST\" />\n    <param name=\"framerate\" value=\"60\" />\n    <param name=\"image_width\" value=\"640\" />\n    <param name=\"image_height\" value=\"480\" />\n    <param name=\"pixel_format\" value=\"yuyv\" />\n    <param name=\"camera_frame_id\" value=\"usb_cam\" />\n    <param name=\"io_method\" value=\"mmap\"/>\n    <param name=\"autofocus\" value=\"false\"/>\n    <param name=\"focus\" value=\"40\"/>\n    <param name=\"autoexposure\" value=\"true\"/>\n  </node>\n  <node name=\"usb_cam_right_wrist\" pkg=\"usb_cam\" type=\"usb_cam_node\" output=\"screen\" >",
+        "type": "code",
+        "location": "/launch/4arms_teleop.launch:105-129"
+    },
+    "313": {
+        "file_id": 24,
+        "content": "Launch file for running 4 arms teleoperation on robot. Includes camera configuration, auto-focus and exposure settings, and two additional cameras for left and right wrist views.",
+        "type": "comment"
+    },
+    "314": {
+        "file_id": 24,
+        "content": "    <param name=\"video_device\" value=\"/dev/CAM_RIGHT_WRIST\" />\n    <param name=\"framerate\" value=\"60\" />\n    <param name=\"image_width\" value=\"640\" />\n    <param name=\"image_height\" value=\"480\" />\n    <param name=\"pixel_format\" value=\"yuyv\" />\n    <param name=\"camera_frame_id\" value=\"usb_cam\" />\n    <param name=\"io_method\" value=\"mmap\"/>\n    <param name=\"autofocus\" value=\"false\"/>\n    <param name=\"focus\" value=\"40\"/>\n    <param name=\"autoexposure\" value=\"true\"/>\n  </node>\n</launch>",
+        "type": "code",
+        "location": "/launch/4arms_teleop.launch:130-144"
+    },
+    "315": {
+        "file_id": 24,
+        "content": "This code sets up camera parameters for a mobile robot. It specifies the device, framerate, resolution, pixel format, camera frame ID, input/output method, and enables autoexposure while disabling autofocus.",
+        "type": "comment"
+    },
+    "316": {
+        "file_id": 25,
+        "content": "/package.xml",
+        "type": "filepath"
+    },
+    "317": {
+        "file_id": 25,
+        "content": "The package.xml file describes the \"aloha\" ROS package, specifying its name, version, and dependencies such as catkin, interbotix_xs_msgs, rosbag, roscpp, tf2_ros, rviz, sensor_msgs, std_msgs, and std_srvs, with author Tony Zhao. The code exports execution and export dependencies including interbotix_xsarm_control, rosbag, roscpp, tf2_ros, rviz, sensor_msgs, std_msgs, and std_srvs.",
+        "type": "summary"
+    },
+    "318": {
+        "file_id": 25,
+        "content": "<?xml version=\"1.0\"?>\n<package format=\"2\">\n  <name>aloha</name>\n  <version>0.0.0</version>\n  <description>ALOHA: A Low-cost Open-source Hardware System for Bimanual Teleoperation</description>\n  <maintainer email=\"tonyzhao@stanford.edu\">Tony Zhao</maintainer>\n  <license>BSD</license>\n  <!-- <url type=\"website\">http://wiki.ros.org/interbotix_xsarm_puppet</url> -->\n  <author email=\"tonyzhao@stanford.edu\">Tony Zhao</author>\n  <!-- The *depend tags are used to specify dependencies -->\n  <!-- Dependencies can be catkin packages or system dependencies -->\n  <buildtool_depend>catkin</buildtool_depend>\n  <build_depend>interbotix_xs_msgs</build_depend>\n  <build_depend>interbotix_xsarm_control</build_depend>\n  <build_depend>rosbag</build_depend>\n  <build_depend>roscpp</build_depend>\n  <build_depend>tf2_ros</build_depend>\n  <build_depend>rviz</build_depend>\n  <build_depend>sensor_msgs</build_depend>\n  <build_depend>std_msgs</build_depend>\n  <build_depend>std_srvs</build_depend>\n  <build_export_depend>interbotix_xs_msgs</build_export_depend>",
+        "type": "code",
+        "location": "/package.xml:1-23"
+    },
+    "319": {
+        "file_id": 25,
+        "content": "This package.xml file describes the \"aloha\" ROS (Robot Operating System) package, version 0.0.0, with details on its name, description, maintainer, license, and dependencies. The file specifies buildtool and build dependencies including catkin, interbotix_xs_msgs, rosbag, roscpp, tf2_ros, rviz, sensor_msgs, std_msgs, and std_srvs. The author is Tony Zhao with email tonyzhao@stanford.edu.",
+        "type": "comment"
+    },
+    "320": {
+        "file_id": 25,
+        "content": "  <build_export_depend>interbotix_xsarm_control</build_export_depend>\n  <build_export_depend>rosbag</build_export_depend>\n  <build_export_depend>roscpp</build_export_depend>\n  <build_export_depend>tf2_ros</build_export_depend>\n  <build_export_depend>rviz</build_export_depend>\n  <build_export_depend>sensor_msgs</build_export_depend>\n  <build_export_depend>std_msgs</build_export_depend>\n  <build_export_depend>std_srvs</build_export_depend>\n  <exec_depend>interbotix_xs_msgs</exec_depend>\n  <exec_depend>interbotix_xsarm_control</exec_depend>\n  <exec_depend>rosbag</exec_depend>\n  <exec_depend>roscpp</exec_depend>\n  <exec_depend>tf2_ros</exec_depend>\n  <exec_depend>rviz</exec_depend>\n  <exec_depend>sensor_msgs</exec_depend>\n  <exec_depend>std_msgs</exec_depend>\n  <exec_depend>std_srvs</exec_depend>\n  <!-- The export tag contains other, unspecified, tags -->\n  <export>\n    <!-- Other tools can request additional information be placed here -->\n  </export>\n</package>",
+        "type": "code",
+        "location": "/package.xml:24-46"
+    },
+    "321": {
+        "file_id": 25,
+        "content": "This code specifies the export and execution dependencies for a ROS package. It includes dependencies like interbotix_xsarm_control, rosbag, roscpp, tf2_ros, rviz, sensor_msgs, std_msgs, and std_srvs. The export tag holds additional information requested by other tools.",
+        "type": "comment"
+    },
+    "322": {
+        "file_id": 26,
+        "content": "/setup.py",
+        "type": "filepath"
+    },
+    "323": {
+        "file_id": 26,
+        "content": "This code imports necessary modules and sets up a Python package named 'aloha' with version 0.0.0, using all findable packages, licensed under the MIT License, and provides a long description from README.md file.",
+        "type": "summary"
+    },
+    "324": {
+        "file_id": 26,
+        "content": "from distutils.core import setup\nfrom setuptools import find_packages\nsetup(\n    name='aloha',\n    version='0.0.0',\n    packages=find_packages(),\n    license='MIT License',\n    long_description=open('README.md').read(),\n)",
+        "type": "code",
+        "location": "/setup.py:1-10"
+    },
+    "325": {
+        "file_id": 26,
+        "content": "This code imports necessary modules and sets up a Python package named 'aloha' with version 0.0.0, using all findable packages, licensed under the MIT License, and provides a long description from README.md file.",
+        "type": "comment"
+    }
+}

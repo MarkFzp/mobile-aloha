@@ -1,0 +1,10 @@
+{
+    "summary": "This YAML file configures the puppet_left device's port and defines its modes for arm and gripper, setting parameters like operating mode, profile type, velocity, acceleration, and torque enable.",
+    "details": [
+        {
+            "comment": "This YAML file configures the puppet_left device's port and defines its modes for arm and gripper, setting parameters like operating mode, profile type, velocity, acceleration, and torque enable.",
+            "location": "\"/media/root/Prima/works/mobile-aloha/docs/src/config/puppet_modes_left.yaml\":0-16",
+            "content": "port: /dev/ttyDXL_puppet_left\ngroups:\n  arm:\n    operating_mode: position\n    profile_type: velocity\n    profile_velocity: 0\n    profile_acceleration: 0\n    torque_enable: true\nsingles:\n  gripper:\n    operating_mode: linear_position\n    profile_type: velocity\n    profile_velocity: 0\n    profile_acceleration: 0\n    torque_enable: true"
+        }
+    ]
+}

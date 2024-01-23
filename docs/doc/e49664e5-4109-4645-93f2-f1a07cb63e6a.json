@@ -1,0 +1,15 @@
+{
+    "summary": "The code initializes a RealSense pipeline, sets target velocities, gathers wheel and RealSense velocity data, plots the results, saves as 'vel.png', and adds a legend with matplotlib in Python.",
+    "details": [
+        {
+            "comment": "The code enables a tracer, initializes RealSense pipeline, sets target velocities for tracer's angular motion, gets wheel and RealSense velocity readings, and finally plots the obtained data.",
+            "location": "\"/media/root/Prima/works/mobile-aloha/docs/src/aloha_scripts/speed_test.py\":0-41",
+            "content": "import pyagxrobots\nimport time\nfrom matplotlib import pyplot as plt\nimport pyrealsense2 as rs\ntracer = pyagxrobots.pysdkugv.TracerBase()\ntracer.EnableCAN()\npipeline = rs.pipeline()\ncfg = rs.config()\n# if only pose stream is enabled, fps is higher (202 vs 30)\ncfg.enable_stream(rs.stream.pose)\npipeline.start(cfg)\nrs_vels = []\nwheel_vels = []\ntarget_vels = []\nprint('Start!')\nfor i in range(40):\n    target_vel = 0.2\n    target_vels.append(target_vel)\n    # tracer.SetMotionCommand(linear_vel=target_vel)\n    tracer.SetMotionCommand(angular_vel=target_vel)\n    # wheel_vel = tracer.GetLinearVelocity()\n    wheel_vel = tracer.GetAngularVelocity()\n    wheel_vels.append(wheel_vel)\n    frames = pipeline.wait_for_frames()\n    pose_frame = frames.get_pose_frame()\n    pose = pose_frame.get_pose_data()\n    # rs_vel = pose.velocity.z\n    rs_vel = pose.angular_velocity.y\n    rs_vels.append(rs_vel)\n    time.sleep(0.05)\nprint('End!')\npipeline.stop()\nplt.plot(rs_vels, label='rs')\nplt.plot(wheel_vels, label='wheel')\nplt.plot(target_vels, label='target_vel')"
+        },
+        {
+            "comment": "This code saves the current figure as an image named 'vel.png' and adds a legend to it using matplotlib library in Python.",
+            "location": "\"/media/root/Prima/works/mobile-aloha/docs/src/aloha_scripts/speed_test.py\":42-43",
+            "content": "plt.legend()\nplt.savefig('vel.png')"
+        }
+    ]
+}

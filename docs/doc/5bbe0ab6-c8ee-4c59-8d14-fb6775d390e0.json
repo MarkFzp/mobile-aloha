@@ -1,0 +1,10 @@
+{
+    "summary": "This script checks if the episode count is valid, then runs a task for the specified number of episodes. If any command execution fails, it stops and returns an error message.",
+    "details": [
+        {
+            "comment": "This script checks if the episode count is valid, then runs a task for the specified number of episodes. If any command execution fails, it stops and returns an error message.",
+            "location": "\"/media/root/Prima/works/mobile-aloha/docs/src/aloha_scripts/auto_record.sh\":0-14",
+            "content": "if [ \"$2\" -lt 0 ]; then\n  echo \"# of episodes not valid\"\n  exit\nfi\necho \"Task: $1\"\nfor (( i=0; i<$2; i++ ))\ndo\n  echo \"Starting episode $i\"\n  python3 record_episodes.py --task \"$1\"\n  if [ $? -ne 0 ]; then\n    echo \"Failed to execute command. Returning\"\n    exit\n  fi\ndone"
+        }
+    ]
+}
