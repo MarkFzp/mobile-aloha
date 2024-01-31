@@ -7,12 +7,12 @@
         "0": {
             "filepath": "/CMakeLists.txt",
             "entry_id": 0,
-            "language_id": "plain-text"
+            "language_id": "cmake"
         },
         "1": {
             "filepath": "/README.md",
             "entry_id": 4,
-            "language_id": "markdown"
+            "language_id": "plain-text"
         },
         "2": {
             "filepath": "/aloha_scripts/auto_record.sh",
