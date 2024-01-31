@@ -1,0 +1,10 @@
+{
+    "summary": "This code imports necessary modules and sets up a Python package named 'aloha' with version 0.0.0, using all findable packages, licensed under the MIT License, and provides a long description from README.md file.",
+    "details": [
+        {
+            "comment": "This code imports necessary modules and sets up a Python package named 'aloha' with version 0.0.0, using all findable packages, licensed under the MIT License, and provides a long description from README.md file.",
+            "location": "\"/media/root/Prima/works/mobile-aloha/docs/src/setup.py\":0-9",
+            "content": "from distutils.core import setup\nfrom setuptools import find_packages\nsetup(\n    name='aloha',\n    version='0.0.0',\n    packages=find_packages(),\n    license='MIT License',\n    long_description=open('README.md').read(),\n)"
+        }
+    ]
+}

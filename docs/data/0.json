@@ -1,0 +1,547 @@
+{
+    "0": {
+        "file_id": 0,
+        "content": "/CMakeLists.txt",
+        "type": "filepath"
+    },
+    "1": {
+        "file_id": 0,
+        "content": "This CMakeLists.txt file sets the minimum required version, defines the project name as \"aloha\", compiles it as C++11, and finds the necessary catkin packages for ROS Kinetic and newer. It also includes necessary dependencies, declares package configurations, specifies additional header file locations, and prepares to build the project.",
+        "type": "summary"
+    },
+    "2": {
+        "file_id": 0,
+        "content": "cmake_minimum_required(VERSION 2.8.3)\nproject(aloha)\n## Compile as C++11, supported in ROS Kinetic and newer\nadd_compile_options(-std=c++11)\n## Find catkin macros and libraries\n## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)\n## is used, also find other catkin packages\nfind_package(catkin REQUIRED COMPONENTS\n  interbotix_xs_msgs\n  interbotix_xsarm_control\n  rosbag\n  roscpp\n  tf2_ros\n  rviz\n  sensor_msgs\n  std_msgs\n  std_srvs\n)\n###################################\n## catkin specific configuration ##\n###################################\n## The catkin_package macro generates cmake config files for your package\n## Declare things to be passed to dependent projects\ncatkin_package(\n CATKIN_DEPENDS interbotix_xs_msgs interbotix_xsarm_control rosbag roscpp tf2_ros rviz sensor_msgs std_msgs std_srvs\n)\n###########\n## Build ##\n###########\n## Specify additional locations of header files\n## Your package locations should be listed before other locations\ninclude_directories(\n  ${catkin_INCLUDE_DIRS}\n)",
+        "type": "code",
+        "location": "/CMakeLists.txt:1-39"
+    },
+    "3": {
+        "file_id": 0,
+        "content": "This CMakeLists.txt file sets the minimum required version, defines the project name as \"aloha\", compiles it as C++11, and finds the necessary catkin packages for ROS Kinetic and newer. It also includes necessary dependencies, declares package configurations, specifies additional header file locations, and prepares to build the project.",
+        "type": "comment"
+    },
+    "4": {
+        "file_id": 1,
+        "content": "/README.md",
+        "type": "filepath"
+    },
+    "5": {
+        "file_id": 1,
+        "content": "This guide installs ROS for the Interbotix XS robot on Ubuntu 22.04, addressing mobile-aloha issues and providing steps for USB debugging, camera configuration, gripper motor management, and teleoperation connection, along with terminal setup, script running, data collection, parameter modification, and visualization/replay of episodes using \"sleep.py\".",
+        "type": "summary"
+    },
+    "6": {
+        "file_id": 1,
+        "content": "# Mobile ALOHA: Learning Bimanual Mobile Manipulation with Low-Cost Whole-Body Teleoperation\n#### Project Website: https://mobile-aloha.github.io/\nThis codebase is forked from the [ALOHA repo](https://github.com/tonyzhaozh/aloha), and contains implementation for teleoperation and data collection with the Mobile ALOHA hardware.\nTo build ALOHA, follow the [Hardware Assembly Tutorial](https://docs.google.com/document/d/1_3yhWjodSNNYlpxkRCPIlvIAaQ76Nqk2wsqhnEVM6Dc) and the quick start guide below.\nTo train imitation learning algorithms, you would also need to install [ACT for Mobile ALOHA](https://github.com/MarkFzp/act-plus-plus) which is forked from [ACT](https://github.com/tonyzhaozh/act).\n### Repo Structure\n- ``config``: a config for each robot, designating the port they should bind to, more details in quick start guide.\n- ``launch``: a ROS launch file for all 4 cameras and all 4 robots.\n- ``aloha_scripts``: python code for teleop and data collection\n## Quick start guide\n### Software selection -- OS:",
+        "type": "code",
+        "location": "/README.md:1-17"
+    },
+    "7": {
+        "file_id": 1,
+        "content": "This codebase is forked from the ALOHA repo and contains implementation for teleoperation and data collection with Mobile ALOHA hardware. To build ALOHA, follow the Hardware Assembly Tutorial and the quick start guide below. Additionally, install ACT for Mobile ALOHA to train imitation learning algorithms.",
+        "type": "comment"
+    },
+    "8": {
+        "file_id": 1,
+        "content": "Currently tested and working configurations: \n- :white_check_mark: Ubuntu 18.04 + ROS 1 noetic\n- :white_check_mark: Ubuntu 20.04 + ROS 1 noetic\nOngoing testing (compatibility effort underway):\n- :construction: ROS 2\n- :construction: >= Ubuntu 22.04\n### Software installation - ROS:\n1. Install ROS and interbotix software following https://docs.trossenrobotics.com/interbotix_xsarms_docs/\n2. This will create the directory ``~/interbotix_ws`` which contains ``src``.\n3. git clone this repo inside ``~/interbotix_ws/src``\n4. ``source /opt/ros/noetic/setup.sh && source ~/interbotix_ws/devel/setup.sh``\n5. ``sudo apt-get install ros-noetic-usb-cam && sudo apt-get install ros-noetic-cv-bridge``\n6. run ``catkin_make`` inside ``~/interbotix_ws``, make sure the build is successful\n7. go to ``~/interbotix_ws/src/interbotix_ros_toolboxes/interbotix_xs_toolbox/interbotix_xs_modules/src/interbotix_xs_modules/arm.py``, find function ``publish_positions``.\n   Change ``self.T_sb = mr.FKinSpace(self.robot_des.M, self.robot_des.Slist, self.joint_commands)`` to ``self.T_sb = None``.",
+        "type": "code",
+        "location": "/README.md:19-35"
+    },
+    "9": {
+        "file_id": 1,
+        "content": "This code is a configuration guide for the Interbotix XS arm robot, specifically for the ROS (Robot Operating System). It provides step-by-step instructions on how to install necessary software packages and make changes to the source code. The instructions include cloning the repository, setting up the environment, and running specific commands to ensure successful building and functioning of the arm. Additionally, it highlights ongoing testing efforts for ROS 2 and Ubuntu 22.04 compatibility.",
+        "type": "comment"
+    },
+    "10": {
+        "file_id": 1,
+        "content": "   This prevents the code from calculating FK at every step which delays teleoperation.\n### Hardware installation:\nThe goal of this section is to run ``roslaunch aloha 4arms_teleop.launch``, which starts\ncommunication with 4 robots and 3 cameras. It should work after finishing the following steps:\nStep 1: Connect 4 robots to the computer via USB, and power on. *Do not use extension cable or usb hub*.\n- To check if the robot is connected, install dynamixel wizard [here](https://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_wizard2/)\n- Dynamixel wizard is a very helpful debugging tool that connects to individual motors of the robot. It allows\nthings such as rebooting the motor (very useful!), torque on/off, and sending commands.\nHowever, it has no knowledge about the kinematics of the robot, so be careful about collisions.\nThe robot *will* collapse if motors are torque off i.e. there is no automatically engaged brakes in joints.\n- Open Dynamixel wizard, go into ``options`` and select:\n  - Protocal 2.0",
+        "type": "code",
+        "location": "/README.md:36-49"
+    },
+    "11": {
+        "file_id": 1,
+        "content": "This code snippet explains the steps for hardware installation in the mobile-aloha project. It mentions connecting 4 robots to the computer via USB, powering them on, and checking their connection using Dynamixel Wizard software. The wizard allows debugging tasks like rebooting motors, turning torque on/off, and sending commands but should be used with caution to avoid collisions.",
+        "type": "comment"
+    },
+    "12": {
+        "file_id": 1,
+        "content": "  - All ports\n  - 1000000 bps\n  - ID range from 0-10\n- Note: repeat above everytime before you scan.\n- Then hit ``Scan``. There should be 4 devices showing up, each with 9 motors.\n- One issue that arises is the port each robot binds to can change over time, e.g. a robot that\nis initially ``ttyUSB0`` might suddenly become ``ttyUSB5``. To resolve this, we bind each robot to a fixed symlink\nport with the following mapping:\n  - ``ttyDXL_master_right``: right master robot (master: the robot that the operator would be holding)\n  - ``ttyDXL_puppet_right``: right puppet robot (puppet: the robot that performs the task)\n  - ``ttyDXL_master_left``: left master robot\n  - ``ttyDXL_puppet_left``: left puppet robot\n- Take ``ttyDXL_master_right``: right master robot as an example:\n  1. Find the port that the right master robot is currently binding to, e.g. ``ttyUSB0``\n  2. run ``udevadm info --name=/dev/ttyUSB0 --attribute-walk | grep serial`` to obtain the serial number. Use the first one that shows up, the format should look similar to ``FT6S4DSP``.",
+        "type": "code",
+        "location": "/README.md:50-66"
+    },
+    "13": {
+        "file_id": 1,
+        "content": "This code is providing a method to fix the port binding of robots, as their assigned ports may change over time. It creates symlinks for different robots (master and puppet right and left) by finding the current port they are bound to and assigning them a fixed symbolic port. This ensures consistent identification and access regardless of changing port assignments.",
+        "type": "comment"
+    },
+    "14": {
+        "file_id": 1,
+        "content": "  3. ``sudo vim /etc/udev/rules.d/99-fixed-interbotix-udev.rules`` and add the following line: \n         SUBSYSTEM==\"tty\", ATTRS{serial}==\"<serial number here>\", ENV{ID_MM_DEVICE_IGNORE}=\"1\", ATTR{device/latency_timer}=\"1\", SYMLINK+=\"ttyDXL_master_right\"\n  4. This will make sure the right master robot is *always* binding to ``ttyDXL_master_right``\n  5. Repeat with the rest of 3 arms.\n- To apply the changes, run ``sudo udevadm control --reload && sudo udevadm trigger``\n- If successful, you should be able to find ``ttyDXL*`` in your ``/dev``\nStep 2: Set max current for gripper motors\n- Open Dynamixel Wizard, and select the wrist motor for puppet arms. The name of it should be ```[ID:009] XM430-W350```\n- Tip: the LED on the base of robot will flash when it is talking to Dynamixel Wizard. This will help determine which robot is selected. \n- Find ``38 Current Limit``, enter ``300``, then hit ``save`` at the bottom.\n- Repeat this for both puppet robots.\n- This limits the max current through gripper motors, to prevent overloading errors.",
+        "type": "code",
+        "location": "/README.md:67-81"
+    },
+    "15": {
+        "file_id": 1,
+        "content": "Create udev rule for right master robot, ensure binding to \"ttyDXL_master_right\", and repeat for other arms. Apply changes, find \"ttyDXL*\" in /dev. In Dynamixel Wizard, set max current limit for gripper motors (XM430-W350) to 300, repeat for both puppet robots. This prevents overloading errors.",
+        "type": "comment"
+    },
+    "16": {
+        "file_id": 1,
+        "content": "Step 3: Setup 3 cameras\n- You may use usb hub here, but *maximum 2 cameras per hub for reasonable latency*.\n- To make sure all 3 cameras are binding to a consistent port, similar steps are needed.\n- Cameras are by default binding to ``/dev/video{0, 1, 2...}``, while we want to have symlinks ``{CAM_RIGHT_WRIST, CAM_LEFT_WRIST, CAM_HIGH}``\n- Take ``CAM_RIGHT_WRIST`` as an example, and let's say it is now binding to ``/dev/video0``. run ``udevadm info --name=/dev/video0 --attribute-walk | grep serial`` to obtain it's serial. Use the first one that shows up, the format should look similar to ``0E1A2B2F``.\n- Then ``sudo vim /etc/udev/rules.d/99-fixed-interbotix-udev.rules`` and add the following line \n      SUBSYSTEM==\"video4linux\", ATTRS{serial}==\"<serial number here>\", ATTR{index}==\"0\", ATTRS{idProduct}==\"085c\", ATTR{device/latency_timer}=\"1\", SYMLINK+=\"CAM_RIGHT_WRIST\"\n- Repeat this for ``{CAM_LEFT_WRIST, CAM_HIGH}`` in additional to ``CAM_RIGHT_WRIST``\n- To apply the changes, run ``sudo udevadm control --reload && sudo udevadm trigger``",
+        "type": "code",
+        "location": "/README.md:84-94"
+    },
+    "17": {
+        "file_id": 1,
+        "content": "This code provides instructions to setup 3 cameras and bind them to specific ports consistently. It suggests using a maximum of 2 cameras per USB hub for better latency, creates symlinks for each camera, and guides through obtaining serial numbers, editing udev rules, and applying changes to make the cameras bind to consistent ports.",
+        "type": "comment"
+    },
+    "18": {
+        "file_id": 1,
+        "content": "- If successful, you should be able to find ``{CAM_RIGHT_WRIST, CAM_LEFT_WRIST, CAM_HIGH}`` in your ``/dev``\nStep 4: Setup the AgileX Tracer base\n- Connect the base to the computer via the stock CANBUS-to-USB cable, and power on.\n- Install SDK from AgileX\n    ```\n    pip3 install pyagxrobots\n    ```\n- Enable gs_usb kernel module\n   ```\n   sudo modprobe gs_usb\n   ```\n- Bring up the CAN device\n   ```\n   sudo ip link set can0 up type can bitrate 500000\n   ```\n- If no error occured in the previous steps, you should be able to see the can device now by using command\n   ```\n   ifconfig -a\n   ```\n- Install and use can-utils to test the hardware\n   ```\n   sudo apt install can-utils\n   ```\n- Testing commands:\n   ```\n   # receiving data from can0\n   candump can0\n   ```\nAt this point, have a new terminal\n    conda deactivate # if conda shows up by default\n    source /opt/ros/noetic/setup.sh && source ~/interbotix_ws/devel/setup.sh\n    roslaunch aloha 4arms_teleop.launch\nIf no error message is showing up, the computer should be successfully connected to all 3 cameras, all 4 robot arms and the robot base.",
+        "type": "code",
+        "location": "/README.md:95-132"
+    },
+    "19": {
+        "file_id": 1,
+        "content": "Installing the AgileX Tracer SDK and enabling gs_usb kernel module for setting up the base, bringing up the CAN device, testing the hardware with can-utils, and launching 4arms_teleop.launch to establish connection between computer and all robot components.",
+        "type": "comment"
+    },
+    "20": {
+        "file_id": 1,
+        "content": "#### Trouble shooting\n- Make sure Dynamixel Wizard is disconnected, and no app is using webcam's stream. It will prevent ROS from connecting to\nthese devices.\n### Software installation - Conda:\n    conda create -n aloha python=3.8.10\n    conda activate aloha\n    pip install torchvision\n    pip install torch\n    pip install pyquaternion\n    pip install pyyaml\n    pip install rospkg\n    pip install pexpect\n    pip install mujoco\n    pip install dm_control\n    pip install opencv-python\n    pip install matplotlib\n    pip install einops\n    pip install packaging\n    pip install h5py\n    pip install tqdm\n    pip install wandb\n### Testing teleoperation\n**Notice**: Before running the commands below, be sure to place all 4 robots in their sleep positions, and open master robot's gripper. \nAll robots will rise to a height that is easy for teleoperation.\n    # ROS terminal\n    conda deactivate\n    source /opt/ros/noetic/setup.sh && source ~/interbotix_ws/devel/setup.sh\n    roslaunch aloha 4arms_teleop.launch\n    # Right hand terminal",
+        "type": "code",
+        "location": "/README.md:134-168"
+    },
+    "21": {
+        "file_id": 1,
+        "content": "The code provides instructions for troubleshooting, software installation using Conda, and testing teleoperation. It ensures that the Dynamixel Wizard is disconnected, no app uses the webcam's stream, and installs necessary packages like Torchvision, Pyquaternion, Pyyaml, etc. Before running the commands, it advises placing all 4 robots in sleep positions, opening the master robot's gripper, and launching the teleoperation using ROS terminal with specific commands.",
+        "type": "comment"
+    },
+    "22": {
+        "file_id": 1,
+        "content": "    conda activate aloha\n    cd ~/interbotix_ws/src/aloha/aloha_scripts\n    python3 one_side_teleop.py right\n    # Left hand terminal\n    conda activate aloha\n    cd ~/interbotix_ws/src/aloha/aloha_scripts\n    python3 one_side_teleop.py left\nThe teleoperation will start when the master side gripper is closed.\n## Example Usages\nTo set up a new terminal, run:\n    conda activate aloha\n    cd ~/interbotix_ws/src/aloha/aloha_scripts\nThe ``one_side_teleop.py`` we ran is for testing teleoperation and has no data collection. To collect data for an episode, run:\n    python3 record_episodes.py --dataset_dir <data save dir> --episode_idx 0\nThis will store a hdf5 file at ``<data save dir>``.\nTo change episode length and other params, edit ``constants.py`` directly.\nTo visualize the episode collected, run:\n    python3 visualize_episodes.py --dataset_dir <data save dir> --episode_idx 0\nTo replay the episode collected with real robot, run:\n    python3 replay_episodes.py --dataset_dir <data save dir> --episode_idx 0\nTo lower 4 robots before e.g. cutting off power, run:",
+        "type": "code",
+        "location": "/README.md:169-204"
+    },
+    "23": {
+        "file_id": 1,
+        "content": "The code provides instructions for setting up a terminal, running teleoperation scripts, collecting data using record_episodes.py, modifying parameters in constants.py, visualizing episodes with visualize_episodes.py, and replaying episodes with real robot using replay_episodes.py. It also mentions a command to lower 4 robots when needed.",
+        "type": "comment"
+    },
+    "24": {
+        "file_id": 1,
+        "content": "    python3 sleep.py",
+        "type": "code",
+        "location": "/README.md:206-206"
+    },
+    "25": {
+        "file_id": 1,
+        "content": "The code above is running a Python script named \"sleep.py\" on a system with Python 3 installed. This could potentially pause the execution for a certain amount of time, depending on how the \"sleep.py\" script is implemented.",
+        "type": "comment"
+    },
+    "26": {
+        "file_id": 2,
+        "content": "/aloha_scripts/auto_record.sh",
+        "type": "filepath"
+    },
+    "27": {
+        "file_id": 2,
+        "content": "This script checks if the episode count is valid, then runs a task for the specified number of episodes. If any command execution fails, it stops and returns an error message.",
+        "type": "summary"
+    },
+    "28": {
+        "file_id": 2,
+        "content": "if [ \"$2\" -lt 0 ]; then\n  echo \"# of episodes not valid\"\n  exit\nfi\necho \"Task: $1\"\nfor (( i=0; i<$2; i++ ))\ndo\n  echo \"Starting episode $i\"\n  python3 record_episodes.py --task \"$1\"\n  if [ $? -ne 0 ]; then\n    echo \"Failed to execute command. Returning\"\n    exit\n  fi\ndone",
+        "type": "code",
+        "location": "/aloha_scripts/auto_record.sh:1-15"
+    },
+    "29": {
+        "file_id": 2,
+        "content": "This script checks if the episode count is valid, then runs a task for the specified number of episodes. If any command execution fails, it stops and returns an error message.",
+        "type": "comment"
+    },
+    "30": {
+        "file_id": 3,
+        "content": "/aloha_scripts/constants.py",
+        "type": "filepath"
+    },
+    "31": {
+        "file_id": 3,
+        "content": "The code sets Aloha Mobile task parameters and constants, such as dataset directories, episode lengths, camera names, configurations for Elevator datasets with train ratios, weights, and multiple experiments like Chair and Shrimp. It also includes constants and functions for the shrimp experiment, covering gripper positions, joint limits, normalization/unnormalization, and master/puppet gripper positions.",
+        "type": "summary"
+    },
+    "32": {
+        "file_id": 3,
+        "content": "### Task parameters\nimport pathlib\nimport os\nDATA_DIR = os.path.expanduser('~/data')\nTASK_CONFIGS = {\n    'aloha_mobile_dummy':{\n        'dataset_dir': DATA_DIR + '/aloha_mobile_dummy',\n        'episode_len': 1000,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    },\n    # wash_pan\n    'aloha_mobile_wash_pan':{\n        'dataset_dir': DATA_DIR + '/aloha_mobile_wash_pan',\n        'episode_len': 1100,\n        'train_ratio': 0.9,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    },\n    'aloha_mobile_wash_pan_cotrain':{\n        'dataset_dir': [\n            DATA_DIR + '/aloha_mobile_wash_pan',\n            DATA_DIR + '/aloha_compressed_dataset',\n        ], # only the first dataset_dir is used for val\n        'stats_dir': [\n            DATA_DIR + '/aloha_mobile_wash_pan',\n        ],\n        'sample_weights': [5, 5],\n        'train_ratio': 0.9, # ratio of train data from the first dataset_dir\n        'episode_len': 1100,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']",
+        "type": "code",
+        "location": "/aloha_scripts/constants.py:1-31"
+    },
+    "33": {
+        "file_id": 3,
+        "content": "This code defines task parameters for different tasks, including 'aloha_mobile_dummy', 'aloha_mobile_wash_pan', and 'aloha_mobile_wash_pan_cotrain'. Each task has its own dataset directory, episode length, camera names, and specific configuration like train ratio for the 'aloha_mobile_wash_pan_cotrain' task. These parameters are stored in the TASK_CONFIGS dictionary for later use in the codebase.",
+        "type": "comment"
+    },
+    "34": {
+        "file_id": 3,
+        "content": "    },\n    # wipe_wine\n    'aloha_mobile_wipe_wine':{\n        'dataset_dir': DATA_DIR + '/aloha_mobile_wipe_wine',\n        'episode_len': 1300,\n        'train_ratio': 0.9,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    },\n    'aloha_mobile_wipe_wine_cotrain':{\n        'dataset_dir': [\n            DATA_DIR + '/aloha_mobile_wipe_wine',\n            DATA_DIR + '/aloha_compressed_dataset',\n        ], # only the first dataset_dir is used for val\n        'stats_dir': [\n            DATA_DIR + '/aloha_mobile_wipe_wine',\n        ],\n        'sample_weights': [5, 5],\n        'train_ratio': 0.9, # ratio of train data from the first dataset_dir\n        'episode_len': 1300,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    },\n    'aloha_mobile_wipe_wine_2':{\n        'dataset_dir': DATA_DIR + '/aloha_mobile_wipe_wine_2',\n        'episode_len': 1300,\n        'train_ratio': 0.9, # ratio of train data from the first dataset_dir\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']",
+        "type": "code",
+        "location": "/aloha_scripts/constants.py:32-58"
+    },
+    "35": {
+        "file_id": 3,
+        "content": "This code defines a series of dictionaries, each representing a specific dataset for use in a machine learning algorithm. Each dataset includes information such as the directory location, episode length, training ratio, and camera names. The dictionaries differ in their structure with some including multiple directories or sample weights for cotraining purposes.",
+        "type": "comment"
+    },
+    "36": {
+        "file_id": 3,
+        "content": "    },\n    'aloha_mobile_wipe_wine_2_cotrain':{\n        'dataset_dir': [\n            DATA_DIR + '/aloha_mobile_wipe_wine_2',\n            DATA_DIR + '/aloha_compressed_dataset',\n        ], # only the first dataset_dir is used for val\n        'stats_dir': [\n            DATA_DIR + '/aloha_mobile_wipe_wine_2',\n        ],\n        'sample_weights': [5, 5],\n        'train_ratio': 0.9, # ratio of train data from the first dataset_dir\n        'episode_len': 1300,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    },\n    # cabinet\n    'aloha_mobile_cabinet':{\n        'dataset_dir': [\n            DATA_DIR + '/aloha_mobile_cabinet',\n            DATA_DIR + '/aloha_mobile_cabinet_handles', # 200\n            DATA_DIR + '/aloha_mobile_cabinet_grasp_pots', # 200\n        ], # only the first dataset_dir is used for val\n        'stats_dir': [\n            DATA_DIR + '/aloha_mobile_cabinet',\n        ],\n        'sample_weights': [6, 1, 1],\n        'train_ratio': 0.99, # ratio of train data from the first dataset_dir",
+        "type": "code",
+        "location": "/aloha_scripts/constants.py:59-85"
+    },
+    "37": {
+        "file_id": 3,
+        "content": "Code snippet defines constants for various datasets in the mobile-aloha project. Each constant consists of dataset directory, statistics directory, sample weights, train ratio, episode length, and camera names specific to a task (e.g., wine_2_cotrain, cabinet). The dataset directories are defined as lists with multiple options, but only the first one is used for validation.",
+        "type": "comment"
+    },
+    "38": {
+        "file_id": 3,
+        "content": "        'episode_len': 1500,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    },\n    'aloha_mobile_cabinet_cotrain':{\n        'dataset_dir': [\n            DATA_DIR + '/aloha_mobile_cabinet',\n            DATA_DIR + '/aloha_mobile_cabinet_handles',\n            DATA_DIR + '/aloha_mobile_cabinet_grasp_pots',\n            DATA_DIR + '/aloha_compressed_dataset',\n        ], # only the first dataset_dir is used for val\n        'stats_dir': [\n            DATA_DIR + '/aloha_mobile_cabinet',\n        ],\n        'sample_weights': [6, 1, 1, 2],\n        'train_ratio': 0.99, # ratio of train data from the first dataset_dir\n        'episode_len': 1500,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    },\n    # elevator\n    'aloha_mobile_elevator':{\n        'dataset_dir': DATA_DIR + '/aloha_mobile_elevator',\n        'train_ratio': 0.99,\n        'episode_len': 8500,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    },\n    'aloha_mobile_elevator_truncated':{",
+        "type": "code",
+        "location": "/aloha_scripts/constants.py:86-112"
+    },
+    "39": {
+        "file_id": 3,
+        "content": "This code appears to be a configuration for various datasets used in the 'aloha_mobile' project. Each dataset is defined under a specific key and includes details like dataset directory, statistics directory (if any), sample weights, training ratio, episode length, and camera names. The code seems to handle multiple datasets with different configurations, suggesting that this could be part of a larger system for managing and utilizing various datasets in the project.",
+        "type": "comment"
+    },
+    "40": {
+        "file_id": 3,
+        "content": "        'dataset_dir': [\n            DATA_DIR + '/aloha_mobile_elevator_truncated',\n            DATA_DIR + '/aloha_mobile_elevator_2', # 1200\n            DATA_DIR + '/aloha_mobile_elevator_button', # 800\n        ], # only the first dataset_dir is used for val\n        'stats_dir': [\n            DATA_DIR + '/aloha_mobile_elevator_truncated',\n            DATA_DIR + '/aloha_mobile_elevator_2',\n        ],\n        'sample_weights': [3, 3, 2],\n        'train_ratio': 0.99, # ratio of train data from the first dataset_dir\n        'episode_len': 2250,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    },\n    'aloha_mobile_elevator_truncated_cotrain':{\n        'dataset_dir': [\n            DATA_DIR + '/aloha_mobile_elevator_truncated',\n            DATA_DIR + '/aloha_mobile_elevator_2',\n            DATA_DIR + '/aloha_mobile_elevator_button',\n            DATA_DIR + '/aloha_compressed_dataset',\n        ], # only the first dataset_dir is used for val\n        'stats_dir': [\n            DATA_DIR + '/aloha_mobile_elevator_truncated',",
+        "type": "code",
+        "location": "/aloha_scripts/constants.py:113-135"
+    },
+    "41": {
+        "file_id": 3,
+        "content": "This code defines two datasets for the Aloha Mobile Elevator model: 'aloha_mobile_elevator' and 'aloha_mobile_elevator_truncated_cotrain'. Both datasets include multiple dataset directories to be used for training, validation, and statistics. The code also specifies the sample weights, train ratio, and episode length for each dataset.",
+        "type": "comment"
+    },
+    "42": {
+        "file_id": 3,
+        "content": "            DATA_DIR + '/aloha_mobile_elevator_2',\n        ],\n        'sample_weights': [3, 3, 2, 1],\n        'train_ratio': 0.99, # ratio of train data from the first dataset_dir\n        'episode_len': 2250,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    },\n    # high_five\n    'aloha_mobile_high_five':{\n        'dataset_dir': DATA_DIR + '/aloha_mobile_high_five',\n        'train_ratio': 0.9,\n        'episode_len': 2000,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    },\n    'aloha_mobile_high_five_cotrain':{\n        'dataset_dir': [\n            DATA_DIR + '/aloha_mobile_high_five',\n            DATA_DIR + '/aloha_compressed_dataset',\n        ], # only the first dataset_dir is used for val\n        'stats_dir': [\n            DATA_DIR + '/aloha_mobile_high_five',\n        ],\n        'sample_weights': [7.5, 2.5],\n        'train_ratio': 0.9, # ratio of train data from the first dataset_dir\n        'episode_len': 2000,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']",
+        "type": "code",
+        "location": "/aloha_scripts/constants.py:136-162"
+    },
+    "43": {
+        "file_id": 3,
+        "content": "The code contains a dictionary with various dataset configurations for different actions (e.g., 'aloha_mobile_elevator_2', 'aloha_mobile_high_five'). Each configuration has attributes like dataset_dir, train_ratio, episode_len, and camera_names. Some datasets are combined for training ('aloha_mobile_high_five_cotrain') with different weights for each dataset.",
+        "type": "comment"
+    },
+    "44": {
+        "file_id": 3,
+        "content": "    },\n    # chair\n    'aloha_mobile_chair':{\n        'dataset_dir': DATA_DIR + '/aloha_mobile_chair',\n        'train_ratio': 0.95,\n        'episode_len': 2400,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    },\n    'aloha_mobile_chair_truncated':{\n        'dataset_dir': DATA_DIR + '/aloha_mobile_chair_truncated',\n        'train_ratio': 0.95,\n        'episode_len': 2000,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    },\n    'aloha_mobile_chair_truncated_cotrain':{\n        'dataset_dir': [\n            DATA_DIR + '/aloha_mobile_chair_truncated',\n            DATA_DIR + '/aloha_compressed_dataset',\n        ], # only the first dataset_dir is used for val\n        'stats_dir': [\n            DATA_DIR + '/aloha_mobile_chair_truncated',\n        ],\n        'sample_weights': [5, 5],\n        'train_ratio': 0.95, # ratio of train data from the first dataset_dir\n        'episode_len': 2000,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    },",
+        "type": "code",
+        "location": "/aloha_scripts/constants.py:163-190"
+    },
+    "45": {
+        "file_id": 3,
+        "content": "This code defines several dataset configurations for the Aloha mobile chair. Each configuration includes a unique identifier, directory path, train ratio, episode length, and camera names. The \"aloha_mobile_chair_truncated_cotrain\" configuration also includes multiple dataset directories and sample weights for cotraining purposes.",
+        "type": "comment"
+    },
+    "46": {
+        "file_id": 3,
+        "content": "    # shrimp\n    'aloha_mobile_shrimp':{\n        'dataset_dir': DATA_DIR + '/aloha_mobile_shrimp',\n        'train_ratio': 0.99,\n        'episode_len': 4500,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    },\n    'aloha_mobile_shrimp_truncated':{\n        'dataset_dir': DATA_DIR + '/aloha_mobile_shrimp_truncated',\n        'train_ratio': 0.99, # ratio of train data from the first dataset_dir\n        'episode_len': 3750,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    },\n    'aloha_mobile_shrimp_truncated_cotrain':{\n        'dataset_dir': [\n            DATA_DIR + '/aloha_mobile_shrimp_truncated',\n            DATA_DIR + '/aloha_compressed_dataset',\n        ], # only the first dataset_dir is used for val\n        'stats_dir': [\n            DATA_DIR + '/aloha_mobile_shrimp_truncated',\n        ],\n        'sample_weights': [5, 5],\n        'train_ratio': 0.99, # ratio of train data from the first dataset_dir\n        'episode_len': 3750,\n        'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']",
+        "type": "code",
+        "location": "/aloha_scripts/constants.py:192-216"
+    },
+    "47": {
+        "file_id": 3,
+        "content": "This code defines three datasets for the Aloha Mobile Shrimp task. The 'aloha_mobile_shrimp' dataset is a full version with 4500 episode length, while 'aloha_mobile_shrimp_truncated' has 3750 episode length and shares some data from the first dataset for validation. Lastly, 'aloha_mobile_shrimp_truncated_cotrain' is a combination of two datasets, using only the first one for training with a 5:5 sample weight distribution.",
+        "type": "comment"
+    },
+    "48": {
+        "file_id": 3,
+        "content": "    },\n    # 'aloha_mobile_shrimp_2_cotrain':{\n    #     'dataset_dir': [\n    #         DATA_DIR + '/aloha_mobile_shrimp_2',\n    #         DATA_DIR + '/aloha_mobile_shrimp_before_spatula_down', # 2200\n    #         DATA_DIR + '/aloha_compressed_dataset',\n    #     ], # only the first dataset_dir is used for val\n    #     'stats_dir': [\n    #         DATA_DIR + '/aloha_mobile_shrimp_2',\n    #     ],\n    #     'sample_weights': [5, 3, 2],\n    #     'train_ratio': 0.99, # ratio of train data from the first dataset_dir\n    #     'episode_len': 4500,\n    #     'camera_names': ['cam_high', 'cam_left_wrist', 'cam_right_wrist']\n    # },\n}\n### ALOHA fixed constants\nDT = 0.02\nFPS = 50\nJOINT_NAMES = [\"waist\", \"shoulder\", \"elbow\", \"forearm_roll\", \"wrist_angle\", \"wrist_rotate\"]\nSTART_ARM_POSE = [0, -0.96, 1.16, 0, -0.3, 0, 0.02239, -0.02239,  0, -0.96, 1.16, 0, -0.3, 0, 0.02239, -0.02239]\nXML_DIR = str(pathlib.Path(__file__).parent.resolve()) + '/assets/' # note: absolute path\n# Left finger position limits (qpos[7]), right_finger = -1 * left_finger",
+        "type": "code",
+        "location": "/aloha_scripts/constants.py:217-242"
+    },
+    "49": {
+        "file_id": 3,
+        "content": "Code defines a dictionary of constants, including dataset paths and training parameters for ALOHA mobile shrimp experiment. DT and FPS are fixed at 0.02 and 50 respectively. JOINT_NAMES define the joints' positions in the model. START_ARM_POSE is the initial arm pose for the simulation. XML_DIR is an absolute path to assets directory.",
+        "type": "comment"
+    },
+    "50": {
+        "file_id": 3,
+        "content": "MASTER_GRIPPER_POSITION_OPEN = 0.02417\nMASTER_GRIPPER_POSITION_CLOSE = 0.01244\nPUPPET_GRIPPER_POSITION_OPEN = 0.05800\nPUPPET_GRIPPER_POSITION_CLOSE = 0.01844\n# Gripper joint limits (qpos[6])\nMASTER_GRIPPER_JOINT_OPEN = -0.8\nMASTER_GRIPPER_JOINT_CLOSE = -1.65\nPUPPET_GRIPPER_JOINT_OPEN = 1.4910\nPUPPET_GRIPPER_JOINT_CLOSE = -0.6213\n############################ Helper functions ############################\nMASTER_GRIPPER_POSITION_NORMALIZE_FN = lambda x: (x - MASTER_GRIPPER_POSITION_CLOSE) / (MASTER_GRIPPER_POSITION_OPEN - MASTER_GRIPPER_POSITION_CLOSE)\nPUPPET_GRIPPER_POSITION_NORMALIZE_FN = lambda x: (x - PUPPET_GRIPPER_POSITION_CLOSE) / (PUPPET_GRIPPER_POSITION_OPEN - PUPPET_GRIPPER_POSITION_CLOSE)\nMASTER_GRIPPER_POSITION_UNNORMALIZE_FN = lambda x: x * (MASTER_GRIPPER_POSITION_OPEN - MASTER_GRIPPER_POSITION_CLOSE) + MASTER_GRIPPER_POSITION_CLOSE\nPUPPET_GRIPPER_POSITION_UNNORMALIZE_FN = lambda x: x * (PUPPET_GRIPPER_POSITION_OPEN - PUPPET_GRIPPER_POSITION_CLOSE) + PUPPET_GRIPPER_POSITION_CLOSE\nMASTER2P",
+        "type": "code",
+        "location": "/aloha_scripts/constants.py:243-260"
+    },
+    "51": {
+        "file_id": 3,
+        "content": "This code defines gripper positions and joint limits for two types of grippers. It also includes helper functions to normalize and unnormalize gripper positions, likely used in controlling the gripper movements based on normalized values.",
+        "type": "comment"
+    },
+    "52": {
+        "file_id": 3,
+        "content": "UPPET_POSITION_FN = lambda x: PUPPET_GRIPPER_POSITION_UNNORMALIZE_FN(MASTER_GRIPPER_POSITION_NORMALIZE_FN(x))\nMASTER_GRIPPER_JOINT_NORMALIZE_FN = lambda x: (x - MASTER_GRIPPER_JOINT_CLOSE) / (MASTER_GRIPPER_JOINT_OPEN - MASTER_GRIPPER_JOINT_CLOSE)\nPUPPET_GRIPPER_JOINT_NORMALIZE_FN = lambda x: (x - PUPPET_GRIPPER_JOINT_CLOSE) / (PUPPET_GRIPPER_JOINT_OPEN - PUPPET_GRIPPER_JOINT_CLOSE)\nMASTER_GRIPPER_JOINT_UNNORMALIZE_FN = lambda x: x * (MASTER_GRIPPER_JOINT_OPEN - MASTER_GRIPPER_JOINT_CLOSE) + MASTER_GRIPPER_JOINT_CLOSE\nPUPPET_GRIPPER_JOINT_UNNORMALIZE_FN = lambda x: x * (PUPPET_GRIPPER_JOINT_OPEN - PUPPET_GRIPPER_JOINT_CLOSE) + PUPPET_GRIPPER_JOINT_CLOSE\nMASTER2PUPPET_JOINT_FN = lambda x: PUPPET_GRIPPER_JOINT_UNNORMALIZE_FN(MASTER_GRIPPER_JOINT_NORMALIZE_FN(x))\nMASTER_GRIPPER_VELOCITY_NORMALIZE_FN = lambda x: x / (MASTER_GRIPPER_POSITION_OPEN - MASTER_GRIPPER_POSITION_CLOSE)\nPUPPET_GRIPPER_VELOCITY_NORMALIZE_FN = lambda x: x / (PUPPET_GRIPPER_POSITION_OPEN - PUPPET_GRIPPER_POSITION_CLOSE)\nMASTE",
+        "type": "code",
+        "location": "/aloha_scripts/constants.py:260-271"
+    },
+    "53": {
+        "file_id": 3,
+        "content": "This code defines various functions for normalization and unnormalization of gripper positions and velocities, as well as a function to convert master gripper position to puppet gripper position. It includes constants for gripper joints' open and close positions for both the master and puppet grippers.",
+        "type": "comment"
+    },
+    "54": {
+        "file_id": 3,
+        "content": "R_POS2JOINT = lambda x: MASTER_GRIPPER_POSITION_NORMALIZE_FN(x) * (MASTER_GRIPPER_JOINT_OPEN - MASTER_GRIPPER_JOINT_CLOSE) + MASTER_GRIPPER_JOINT_CLOSE\nMASTER_JOINT2POS = lambda x: MASTER_GRIPPER_POSITION_UNNORMALIZE_FN((x - MASTER_GRIPPER_JOINT_CLOSE) / (MASTER_GRIPPER_JOINT_OPEN - MASTER_GRIPPER_JOINT_CLOSE))\nPUPPET_POS2JOINT = lambda x: PUPPET_GRIPPER_POSITION_NORMALIZE_FN(x) * (PUPPET_GRIPPER_JOINT_OPEN - PUPPET_GRIPPER_JOINT_CLOSE) + PUPPET_GRIPPER_JOINT_CLOSE\nPUPPET_JOINT2POS = lambda x: PUPPET_GRIPPER_POSITION_UNNORMALIZE_FN((x - PUPPET_GRIPPER_JOINT_CLOSE) / (PUPPET_GRIPPER_JOINT_OPEN - PUPPET_GRIPPER_JOINT_CLOSE))\nMASTER_GRIPPER_JOINT_MID = (MASTER_GRIPPER_JOINT_OPEN + MASTER_GRIPPER_JOINT_CLOSE)/2",
+        "type": "code",
+        "location": "/aloha_scripts/constants.py:271-276"
+    },
+    "55": {
+        "file_id": 3,
+        "content": "This code defines functions for converting gripper positions to joint angles and vice versa for both master and puppet grippers. It uses normalization and unnormalization functions, as well as specific joint values for each gripper.",
+        "type": "comment"
+    },
+    "56": {
+        "file_id": 4,
+        "content": "/aloha_scripts/dynamixel_client.py",
+        "type": "filepath"
+    },
+    "57": {
+        "file_id": 4,
+        "content": "The Python module simplifies Dynamixel robot communication with client class and readers, initializes motors, controls robots via functions, and handles errors and synchronization. The code creates classes for reading motor position and velocity, connects to clients, measures operation time, and prints data.",
+        "type": "summary"
+    },
+    "58": {
+        "file_id": 4,
+        "content": "\"\"\"Communication using the DynamixelSDK.\"\"\"\n##This is based off of the dynamixel SDK\nimport atexit\nimport logging\nimport time\nfrom typing import Optional, Sequence, Union, Tuple\nimport numpy as np\nPROTOCOL_VERSION = 2.0\n# The following addresses assume XH motors.\nADDR_TORQUE_ENABLE = 64\nADDR_GOAL_POSITION = 116\nADDR_PRESENT_POSITION = 132\nADDR_PRESENT_VELOCITY = 128\nADDR_PRESENT_CURRENT = 126\nADDR_PRESENT_POS_VEL_CUR = 126\n# Data Byte Length\nLEN_PRESENT_POSITION = 4\nLEN_PRESENT_VELOCITY = 4\nLEN_PRESENT_CURRENT = 2\nLEN_PRESENT_POS_VEL_CUR = 10\nLEN_GOAL_POSITION = 4\nDEFAULT_POS_SCALE = 2.0 * np.pi / 4096  # 0.088 degrees\n# See http://emanual.robotis.com/docs/en/dxl/x/xh430-v210/#goal-velocity\nDEFAULT_VEL_SCALE = 0.229 * 2.0 * np.pi / 60.0  # 0.229 rpm\nDEFAULT_CUR_SCALE = 1.34\ndef dynamixel_cleanup_handler():\n    \"\"\"Cleanup function to ensure Dynamixels are disconnected properly.\"\"\"\n    open_clients = list(DynamixelClient.OPEN_CLIENTS)\n    for open_client in open_clients:\n        if open_client.port_handler.is_using:\n            logging.warning('Forcing client to close.')",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:1-38"
+    },
+    "59": {
+        "file_id": 4,
+        "content": "This code is a Python module for communication with Dynamixel robots using the DynamixelSDK. It defines addresses and data byte lengths for various robot parameters, as well as scaling factors for position, velocity, and current readings. The dynamixel_cleanup_handler function ensures proper disconnection of Dynamixel clients when necessary.",
+        "type": "comment"
+    },
+    "60": {
+        "file_id": 4,
+        "content": "        open_client.port_handler.is_using = False\n        open_client.disconnect()\ndef signed_to_unsigned(value: int, size: int) -> int:\n    \"\"\"Converts the given value to its unsigned representation.\"\"\"\n    if value < 0:\n        bit_size = 8 * size\n        max_value = (1 << bit_size) - 1\n        value = max_value + value\n    return value\ndef unsigned_to_signed(value: int, size: int) -> int:\n    \"\"\"Converts the given value from its unsigned representation.\"\"\"\n    bit_size = 8 * size\n    if (value & (1 << (bit_size - 1))) != 0:\n        value = -((1 << bit_size) - value)\n    return value\nclass DynamixelClient:\n    \"\"\"Client for communicating with Dynamixel motors.\n    NOTE: This only supports Protocol 2.\n    \"\"\"\n    # The currently open clients.\n    OPEN_CLIENTS = set()\n    def __init__(self,\n                 motor_ids: Sequence[int],\n                 port: str = '/dev/ttyUSB0',\n                 baudrate: int = 1000000,\n                 lazy_connect: bool = False,\n                 pos_scale: Optional[float] = None,",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:39-74"
+    },
+    "61": {
+        "file_id": 4,
+        "content": "The code defines a DynamixelClient class for communicating with Dynamixel motors, using Protocol 2. It has methods to convert signed to unsigned and vice versa. The OPEN_CLIENTS variable keeps track of currently open clients. The constructor takes motor_ids, port, baudrate, lazy_connect, and pos_scale as parameters.",
+        "type": "comment"
+    },
+    "62": {
+        "file_id": 4,
+        "content": "                 vel_scale: Optional[float] = None,\n                 cur_scale: Optional[float] = None):\n        \"\"\"Initializes a new client.\n        Args:\n            motor_ids: All motor IDs being used by the client.\n            port: The Dynamixel device to talk to. e.g.\n                - Linux: /dev/ttyUSB0\n                - Mac: /dev/tty.usbserial-*\n                - Windows: COM1\n            baudrate: The Dynamixel baudrate to communicate with.\n            lazy_connect: If True, automatically connects when calling a method\n                that requires a connection, if not already connected.\n            pos_scale: The scaling factor for the positions. This is\n                motor-dependent. If not provided, uses the default scale.\n            vel_scale: The scaling factor for the velocities. This is\n                motor-dependent. If not provided uses the default scale.\n            cur_scale: The scaling factor for the currents. This is\n                motor-dependent. If not provided uses the default scale.",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:75-93"
+    },
+    "63": {
+        "file_id": 4,
+        "content": "The code defines a function that initializes a new client for communication with Dynamixel devices. It accepts arguments such as motor IDs, device port, baudrate, and scaling factors for positions, velocities, and currents. The \"lazy_connect\" argument enables automatic connection if not already connected.",
+        "type": "comment"
+    },
+    "64": {
+        "file_id": 4,
+        "content": "        \"\"\"\n        import dynamixel_sdk\n        self.dxl = dynamixel_sdk\n        self.motor_ids = list(motor_ids)\n        self.port_name = port\n        self.baudrate = baudrate\n        self.lazy_connect = lazy_connect\n        self.port_handler = self.dxl.PortHandler(port)\n        self.packet_handler = self.dxl.PacketHandler(PROTOCOL_VERSION)\n        self._pos_vel_cur_reader = DynamixelPosVelCurReader(\n            self,\n            self.motor_ids,\n            pos_scale=pos_scale if pos_scale is not None else DEFAULT_POS_SCALE,\n            vel_scale=vel_scale if vel_scale is not None else DEFAULT_VEL_SCALE,\n            cur_scale=cur_scale if cur_scale is not None else DEFAULT_CUR_SCALE,\n        )\n        self._pos_reader = DynamixelPosReader(\n            self,\n            self.motor_ids,\n            pos_scale=pos_scale if pos_scale is not None else DEFAULT_POS_SCALE,\n            vel_scale=vel_scale if vel_scale is not None else DEFAULT_VEL_SCALE,\n            cur_scale=cur_scale if cur_scale is not None else DEFAULT_CUR_SCALE,",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:94-118"
+    },
+    "65": {
+        "file_id": 4,
+        "content": "This code initializes and configures the dynamixel_sdk module, sets port, baudrate, and lazy_connect parameters, creates port and packet handlers, and instantiates DynamixelPosVelCurReader and DynamixelPosReader objects for motor position, velocity, and current reading.",
+        "type": "comment"
+    },
+    "66": {
+        "file_id": 4,
+        "content": "        )\n        self._vel_reader = DynamixelVelReader(\n            self,\n            self.motor_ids,\n            pos_scale=pos_scale if pos_scale is not None else DEFAULT_POS_SCALE,\n            vel_scale=vel_scale if vel_scale is not None else DEFAULT_VEL_SCALE,\n            cur_scale=cur_scale if cur_scale is not None else DEFAULT_CUR_SCALE,\n        )\n        self._cur_reader = DynamixelCurReader(\n            self,\n            self.motor_ids,\n            pos_scale=pos_scale if pos_scale is not None else DEFAULT_POS_SCALE,\n            vel_scale=vel_scale if vel_scale is not None else DEFAULT_VEL_SCALE,\n            cur_scale=cur_scale if cur_scale is not None else DEFAULT_CUR_SCALE,\n        )\n        self._sync_writers = {}\n        self.OPEN_CLIENTS.add(self)\n    @property\n    def is_connected(self) -> bool:\n        return self.port_handler.is_open\n    def connect(self):\n        \"\"\"Connects to the Dynamixel motors.\n        NOTE: This should be called after all DynamixelClients on the same\n            process are created.",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:119-146"
+    },
+    "67": {
+        "file_id": 4,
+        "content": "The code initializes the Dynamixel motors and sets up readers for position, velocity, and current. It also creates a dictionary to manage synchronization writers, keeps track of connections with `OPEN_CLIENTS` set, and provides a connect function to establish communication with Dynamixel motors.",
+        "type": "comment"
+    },
+    "68": {
+        "file_id": 4,
+        "content": "        \"\"\"\n        assert not self.is_connected, 'Client is already connected.'\n        if self.port_handler.openPort():\n            logging.info('Succeeded to open port: %s', self.port_name)\n        else:\n            raise OSError(\n                ('Failed to open port at {} (Check that the device is powered '\n                 'on and connected to your computer).').format(self.port_name))\n        if self.port_handler.setBaudRate(self.baudrate):\n            logging.info('Succeeded to set baudrate to %d', self.baudrate)\n        else:\n            raise OSError(\n                ('Failed to set the baudrate to {} (Ensure that the device was '\n                 'configured for this baudrate).').format(self.baudrate))\n        # Start with all motors enabled.  NO, I want to set settings before enabled\n        #self.set_torque_enabled(self.motor_ids, True)\n    def disconnect(self):\n        \"\"\"Disconnects from the Dynamixel device.\"\"\"\n        if not self.is_connected:\n            return\n        if self.port_handler.is_using:",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:147-171"
+    },
+    "69": {
+        "file_id": 4,
+        "content": "This code snippet is part of a Dynamixel client implementation. It ensures the client is not already connected before attempting to connect, and then opens the specified port (checking for any errors). The baud rate is set according to the specified value, also checking for any errors. The code also includes a comment about enabling all motors, but it is commented out, suggesting this may be a future feature. The disconnect function checks if the client is connected before attempting to disconnect.",
+        "type": "comment"
+    },
+    "70": {
+        "file_id": 4,
+        "content": "            logging.error('Port handler in use; cannot disconnect.')\n            return\n        # Ensure motors are disabled at the end.\n        self.set_torque_enabled(self.motor_ids, False, retries=0)\n        self.port_handler.closePort()\n        if self in self.OPEN_CLIENTS:\n            self.OPEN_CLIENTS.remove(self)\n    def set_torque_enabled(self,\n                           motor_ids: Sequence[int],\n                           enabled: bool,\n                           retries: int = -1,\n                           retry_interval: float = 0.25):\n        \"\"\"Sets whether torque is enabled for the motors.\n        Args:\n            motor_ids: The motor IDs to configure.\n            enabled: Whether to engage or disengage the motors.\n            retries: The number of times to retry. If this is <0, will retry\n                forever.\n            retry_interval: The number of seconds to wait between retries.\n        \"\"\"\n        remaining_ids = list(motor_ids)\n        while remaining_ids:\n            remaining_ids = self.write_byte(",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:172-196"
+    },
+    "71": {
+        "file_id": 4,
+        "content": "Ensures motors are disabled at the end, and removes instance from open clients when port is closed.",
+        "type": "comment"
+    },
+    "72": {
+        "file_id": 4,
+        "content": "                remaining_ids,\n                int(enabled),\n                ADDR_TORQUE_ENABLE,\n            )\n            if remaining_ids:\n                logging.error('Could not set torque %s for IDs: %s',\n                              'enabled' if enabled else 'disabled',\n                              str(remaining_ids))\n            if retries == 0:\n                break\n            time.sleep(retry_interval)\n            retries -= 1\n    def read_pos_vel_cur(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:\n        \"\"\"Returns the current positions and velocities.\"\"\"\n        return self._pos_vel_cur_reader.read()\n    def read_pos(self) -> np.ndarray:\n        \"\"\"Returns the current positions and velocities.\"\"\"\n        return self._pos_reader.read()\n    def read_vel(self) -> np.ndarray:\n        \"\"\"Returns the current positions and velocities.\"\"\"\n        return self._vel_reader.read()\n    def read_cur(self) -> np.ndarray:\n        \"\"\"Returns the current positions and velocities.\"\"\"\n        return self._cur_reader.read()",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:197-221"
+    },
+    "73": {
+        "file_id": 4,
+        "content": "This code snippet defines a class for controlling Dynamixel robots. It includes functions to set torque, read positions, velocities, and currents for all connected actuators. The function `write_pos_vel_cur` sets the torque of all connected actuators. If not all IDs are enabled, it logs an error message. Retries with a sleep interval if necessary until all IDs are enabled or retries run out. Functions `read_pos_vel_cur`, `read_pos`, `read_vel`, and `read_cur` return the current positions, velocities, and currents for all connected actuators respectively.",
+        "type": "comment"
+    },
+    "74": {
+        "file_id": 4,
+        "content": "    def write_desired_pos(self, motor_ids: Sequence[int],\n                          positions: np.ndarray):\n        \"\"\"Writes the given desired positions.\n        Args:\n            motor_ids: The motor IDs to write to.\n            positions: The joint angles in radians to write.\n        \"\"\"\n        assert len(motor_ids) == len(positions)\n        # Convert to Dynamixel position space.\n        positions = positions / self._pos_vel_cur_reader.pos_scale\n        self.sync_write(motor_ids, positions, ADDR_GOAL_POSITION,\n                        LEN_GOAL_POSITION)\n    def write_byte(\n            self,\n            motor_ids: Sequence[int],\n            value: int,\n            address: int,\n    ) -> Sequence[int]:\n        \"\"\"Writes a value to the motors.\n        Args:\n            motor_ids: The motor IDs to write to.\n            value: The value to write to the control table.\n            address: The control table address to write to.\n        Returns:\n            A list of IDs that were unsuccessful.\n        \"\"\"\n        self.check_connected()",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:223-254"
+    },
+    "75": {
+        "file_id": 4,
+        "content": "The code defines two methods: \"write_desired_pos\" and \"write_byte\". The former writes the given desired positions to the Dynamixel motors, ensuring that the number of motor IDs matches the number of positions. It also converts the positions to the Dynamixel position space using the _pos_vel_cur_reader's pos_scale. The latter method writes a value to the motors at a specified address in the control table. Both methods require motor IDs, a value or positions (in radians), and an address.",
+        "type": "comment"
+    },
+    "76": {
+        "file_id": 4,
+        "content": "        errored_ids = []\n        for motor_id in motor_ids:\n            comm_result, dxl_error = self.packet_handler.write1ByteTxRx(\n                self.port_handler, motor_id, address, value)\n            success = self.handle_packet_result(\n                comm_result, dxl_error, motor_id, context='write_byte')\n            if not success:\n                errored_ids.append(motor_id)\n        return errored_ids\n    def sync_write(self, motor_ids: Sequence[int],\n                   values: Sequence[Union[int, float]], address: int,\n                   size: int):\n        \"\"\"Writes values to a group of motors.\n        Args:\n            motor_ids: The motor IDs to write to.\n            values: The values to write.\n            address: The control table address to write to.\n            size: The size of the control table value being written to.\n        \"\"\"\n        self.check_connected()\n        key = (address, size)\n        if key not in self._sync_writers:\n            self._sync_writers[key] = self.dxl.GroupSyncWrite(",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:255-279"
+    },
+    "77": {
+        "file_id": 4,
+        "content": "This code defines a function that writes values to a group of motors and returns a list of motor IDs that encountered errors during the process. It first checks if the robot is connected, then initializes an empty list for storing errored IDs. For each motor ID in the given sequence, it attempts to write the specified value to its corresponding address using the packet_handler's `write1ByteTxRx` method. If the attempt fails (indicated by a non-success result from the `handle_packet_result` function), the ID is appended to the errored ID list. Finally, it returns this list of errored motor IDs.",
+        "type": "comment"
+    },
+    "78": {
+        "file_id": 4,
+        "content": "                self.port_handler, self.packet_handler, address, size)\n        sync_writer = self._sync_writers[key]\n        errored_ids = []\n        for motor_id, desired_pos in zip(motor_ids, values):\n            value = signed_to_unsigned(int(desired_pos), size=size)\n            value = value.to_bytes(size, byteorder='little')\n            success = sync_writer.addParam(motor_id, value)\n            if not success:\n                errored_ids.append(motor_id)\n        if errored_ids:\n            logging.error('Sync write failed for: %s', str(errored_ids))\n        comm_result = sync_writer.txPacket()\n        self.handle_packet_result(comm_result, context='sync_write')\n        sync_writer.clearParam()\n    def check_connected(self):\n        \"\"\"Ensures the robot is connected.\"\"\"\n        if self.lazy_connect and not self.is_connected:\n            self.connect()\n        if not self.is_connected:\n            raise OSError('Must call connect() first.')\n    def handle_packet_result(self,\n                             comm_result: int,",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:280-307"
+    },
+    "79": {
+        "file_id": 4,
+        "content": "Code snippet initializes a sync writer, iterates through motor IDs and desired positions, converts values to byte format, checks for successful addition of parameters, logs any failed writes, sends the packet, clears the parameters, and checks if the robot is connected.",
+        "type": "comment"
+    },
+    "80": {
+        "file_id": 4,
+        "content": "                             dxl_error: Optional[int] = None,\n                             dxl_id: Optional[int] = None,\n                             context: Optional[str] = None):\n        \"\"\"Handles the result from a communication request.\"\"\"\n        error_message = None\n        if comm_result != self.dxl.COMM_SUCCESS:\n            error_message = self.packet_handler.getTxRxResult(comm_result)\n        elif dxl_error is not None:\n            error_message = self.packet_handler.getRxPacketError(dxl_error)\n        if error_message:\n            if dxl_id is not None:\n                error_message = '[Motor ID: {}] {}'.format(\n                    dxl_id, error_message)\n            if context is not None:\n                error_message = '> {}: {}'.format(context, error_message)\n            logging.error(error_message)\n            return False\n        return True\n    def convert_to_unsigned(self, value: int, size: int) -> int:\n        \"\"\"Converts the given value to its unsigned representation.\"\"\"\n        if value < 0:",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:308-329"
+    },
+    "81": {
+        "file_id": 4,
+        "content": "This function handles communication results and checks for errors. It takes three optional parameters: dxl_error, dxl_id, and context. If an error is found in the communication result or if dxl_error is not None, it generates an error message with optional information about motor ID and context. The error message is logged using logging.error() and returns False to indicate failure. Otherwise, it returns True for success.",
+        "type": "comment"
+    },
+    "82": {
+        "file_id": 4,
+        "content": "            max_value = (1 << (8 * size)) - 1\n            value = max_value + value\n        return value\n    def __enter__(self):\n        \"\"\"Enables use as a context manager.\"\"\"\n        if not self.is_connected:\n            self.connect()\n        return self\n    def __exit__(self, *args):\n        \"\"\"Enables use as a context manager.\"\"\"\n        self.disconnect()\n    def __del__(self):\n        \"\"\"Automatically disconnect on destruction.\"\"\"\n        self.disconnect()\nclass DynamixelReader:\n    \"\"\"Reads data from Dynamixel motors.\n    This wraps a GroupBulkRead from the DynamixelSDK.\n    \"\"\"\n    def __init__(self, client: DynamixelClient, motor_ids: Sequence[int],\n                 address: int, size: int):\n        \"\"\"Initializes a new reader.\"\"\"\n        self.client = client\n        self.motor_ids = motor_ids\n        self.address = address\n        self.size = size\n        self._initialize_data()\n        self.operation = self.client.dxl.GroupBulkRead(client.port_handler,\n                                                       client.packet_handler)",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:330-365"
+    },
+    "83": {
+        "file_id": 4,
+        "content": "This code defines a DynamixelReader class that reads data from Dynamixel motors. It initializes a GroupBulkRead operation with the client's port and packet handlers. The __init__ method takes motor IDs, address, and size as parameters. A __del__ method is also defined to automatically disconnect on destruction. The code enables use as a context manager with __enter__ and __exit__ methods for connecting and disconnecting the client.",
+        "type": "comment"
+    },
+    "84": {
+        "file_id": 4,
+        "content": "        for motor_id in motor_ids:\n            success = self.operation.addParam(motor_id, address, size)\n            if not success:\n                raise OSError(\n                    '[Motor ID: {}] Could not add parameter to bulk read.'\n                    .format(motor_id))\n    def read(self, retries: int = 1):\n        \"\"\"Reads data from the motors.\"\"\"\n        self.client.check_connected()\n        success = False\n        while not success and retries >= 0:\n            comm_result = self.operation.txRxPacket()\n            success = self.client.handle_packet_result(\n                comm_result, context='read')\n            retries -= 1\n        # If we failed, send a copy of the previous data.\n        if not success:\n            return self._get_data()\n        errored_ids = []\n        for i, motor_id in enumerate(self.motor_ids):\n            # Check if the data is available.\n            available = self.operation.isAvailable(motor_id, self.address,\n                                                   self.size)",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:367-392"
+    },
+    "85": {
+        "file_id": 4,
+        "content": "This code is part of a function that reads data from multiple motors. It iterates through motor IDs, adds parameters for each ID to a bulk read operation, and then attempts to execute the operation until it succeeds or retries run out. If the operation fails, it returns previously stored data instead. The code also checks if the received data is available before processing it.",
+        "type": "comment"
+    },
+    "86": {
+        "file_id": 4,
+        "content": "            if not available:\n                errored_ids.append(motor_id)\n                continue\n            self._update_data(i, motor_id)\n        if errored_ids:\n            logging.error('Bulk read data is unavailable for: %s',\n                          str(errored_ids))\n        return self._get_data()\n    def _initialize_data(self):\n        \"\"\"Initializes the cached data.\"\"\"\n        self._data = np.zeros(len(self.motor_ids), dtype=np.float32)\n    def _update_data(self, index: int, motor_id: int):\n        \"\"\"Updates the data index for the given motor ID.\"\"\"\n        self._data[index] = self.operation.getData(motor_id, self.address,\n                                                   self.size)\n    def _get_data(self):\n        \"\"\"Returns a copy of the data.\"\"\"\n        return self._data.copy()\nclass DynamixelPosVelCurReader(DynamixelReader):\n    \"\"\"Reads positions and velocities.\"\"\"\n    def __init__(self,\n                 client: DynamixelClient,\n                 motor_ids: Sequence[int],\n                 pos_scale: float = 1.0,",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:393-425"
+    },
+    "87": {
+        "file_id": 4,
+        "content": "This code initializes and updates data for dynamixel motors, allowing the user to read position, velocity, and current values. The class DynamixelPosVelCurReader inherits from DynamixelReader, which provides methods to read bulk data from multiple motors in a single command. The code checks if the data is available for each motor ID and logs any unavailable data. It also initializes, updates, and returns data in a numpy array format.",
+        "type": "comment"
+    },
+    "88": {
+        "file_id": 4,
+        "content": "                 vel_scale: float = 1.0,\n                 cur_scale: float = 1.0):\n        super().__init__(\n            client,\n            motor_ids,\n            address=ADDR_PRESENT_POS_VEL_CUR,\n            size=LEN_PRESENT_POS_VEL_CUR,\n        )\n        self.pos_scale = pos_scale\n        self.vel_scale = vel_scale\n        self.cur_scale = cur_scale\n    def _initialize_data(self):\n        \"\"\"Initializes the cached data.\"\"\"\n        self._pos_data = np.zeros(len(self.motor_ids), dtype=np.float32)\n        self._vel_data = np.zeros(len(self.motor_ids), dtype=np.float32)\n        self._cur_data = np.zeros(len(self.motor_ids), dtype=np.float32)\n    def _update_data(self, index: int, motor_id: int):\n        \"\"\"Updates the data index for the given motor ID.\"\"\"\n        cur = self.operation.getData(motor_id, ADDR_PRESENT_CURRENT,\n                                     LEN_PRESENT_CURRENT)\n        vel = self.operation.getData(motor_id, ADDR_PRESENT_VELOCITY,\n                                     LEN_PRESENT_VELOCITY)\n        pos = self.operation.getData(motor_id, ADDR_PRESENT_POSITION,",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:426-450"
+    },
+    "89": {
+        "file_id": 4,
+        "content": "The code defines a class for Dynamixel client with custom scales for position, velocity, and current data. It initializes cached data using numpy zeros and updates the data for a given motor ID. This class is part of the mobile-aloha project, likely used to communicate with Dynamixel motors and collect their position, velocity, and current information.",
+        "type": "comment"
+    },
+    "90": {
+        "file_id": 4,
+        "content": "                                     LEN_PRESENT_POSITION)\n        cur = unsigned_to_signed(cur, size=2)\n        vel = unsigned_to_signed(vel, size=4)\n        pos = unsigned_to_signed(pos, size=4)\n        self._pos_data[index] = float(pos) * self.pos_scale\n        self._vel_data[index] = float(vel) * self.vel_scale\n        self._cur_data[index] = float(cur) * self.cur_scale\n    def _get_data(self):\n        \"\"\"Returns a copy of the data.\"\"\"\n        return (self._pos_data.copy(), self._vel_data.copy(),\n                self._cur_data.copy())\nclass DynamixelPosReader(DynamixelReader):\n    \"\"\"Reads positions and velocities.\"\"\"\n    def __init__(self,\n                 client: DynamixelClient,\n                 motor_ids: Sequence[int],\n                 pos_scale: float = 1.0,\n                 vel_scale: float = 1.0,\n                 cur_scale: float = 1.0):\n        super().__init__(\n            client,\n            motor_ids,\n            address=ADDR_PRESENT_POS_VEL_CUR,\n            size=LEN_PRESENT_POS_VEL_CUR,\n        )",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:451-479"
+    },
+    "91": {
+        "file_id": 4,
+        "content": "This code defines a class `DynamixelPosReader` that inherits from `DynamixelReader` and reads positions and velocities of dynamixel motors. It takes in a client object, motor IDs, and scaling factors for position, velocity, and current. The `__init__` function initializes the superclass with the address and size of data to read, which is LEN_PRESENT_POS_VEL_CUR in this case. The function also converts unsigned values to signed and scales them using the provided scaling factors before storing the data in corresponding lists for position, velocity, and current. The `_get_data` function returns copies of the stored data.",
+        "type": "comment"
+    },
+    "92": {
+        "file_id": 4,
+        "content": "        self.pos_scale = pos_scale\n    def _initialize_data(self):\n        \"\"\"Initializes the cached data.\"\"\"\n        self._pos_data = np.zeros(len(self.motor_ids), dtype=np.float32)\n    def _update_data(self, index: int, motor_id: int):\n        \"\"\"Updates the data index for the given motor ID.\"\"\"\n        pos = self.operation.getData(motor_id, ADDR_PRESENT_POSITION,\n                                     LEN_PRESENT_POSITION)\n        pos = unsigned_to_signed(pos, size=4)\n        self._pos_data[index] = float(pos) * self.pos_scale\n    def _get_data(self):\n        \"\"\"Returns a copy of the data.\"\"\"\n        return self._pos_data.copy()\nclass DynamixelVelReader(DynamixelReader):\n    \"\"\"Reads positions and velocities.\"\"\"\n    def __init__(self,\n                 client: DynamixelClient,\n                 motor_ids: Sequence[int],\n                 pos_scale: float = 1.0,\n                 vel_scale: float = 1.0,\n                 cur_scale: float = 1.0):\n        super().__init__(\n            client,\n            motor_ids,\n            address=ADDR_PRESENT_POS_VEL_CUR,",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:480-509"
+    },
+    "93": {
+        "file_id": 4,
+        "content": "The code defines a class for reading Dynamixel motors' positions and velocities. It initializes data, updates data index for the given motor ID, and returns a copy of the data. The `DynamixelVelReader` class inherits from `DynamixelReader`, initializing superclass with motor IDs, scales, and address for ADDR_PRESENT_POS_VEL_CUR.",
+        "type": "comment"
+    },
+    "94": {
+        "file_id": 4,
+        "content": "            size=LEN_PRESENT_POS_VEL_CUR,\n        )\n        self.pos_scale = pos_scale\n        self.vel_scale = vel_scale\n        self.cur_scale = cur_scale\n    def _initialize_data(self):\n        \"\"\"Initializes the cached data.\"\"\"\n        self._vel_data = np.zeros(len(self.motor_ids), dtype=np.float32)\n    def _update_data(self, index: int, motor_id: int):\n        \"\"\"Updates the data index for the given motor ID.\"\"\"\n        vel = self.operation.getData(motor_id, ADDR_PRESENT_VELOCITY,\n                                     LEN_PRESENT_VELOCITY)\n        vel = unsigned_to_signed(vel, size=4)\n        self._vel_data[index] = float(vel) * self.vel_scale\n    def _get_data(self):\n        \"\"\"Returns a copy of the data.\"\"\"\n        return self._vel_data.copy()\nclass DynamixelCurReader(DynamixelReader):\n    \"\"\"Reads positions and velocities.\"\"\"\n    def __init__(self,\n                 client: DynamixelClient,\n                 motor_ids: Sequence[int],\n                 pos_scale: float = 1.0,\n                 vel_scale: float = 1.0,",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:510-538"
+    },
+    "95": {
+        "file_id": 4,
+        "content": "The provided code contains a class named `DynamixelClient` that initializes cached data and provides methods to update and retrieve data related to motor positions and velocities. The `_initialize_data` method initializes the cached velocity data as zeroes, while the `_update_data` method updates the data for the given motor ID. The `_get_data` method returns a copy of the data. Additionally, there is another class named `DynamixelCurReader`, which inherits from `DynamixelReader` and reads positions and velocities with scaling factors for position and velocity data.",
+        "type": "comment"
+    },
+    "96": {
+        "file_id": 4,
+        "content": "                 cur_scale: float = 1.0):\n        super().__init__(\n            client,\n            motor_ids,\n            address=ADDR_PRESENT_POS_VEL_CUR,\n            size=LEN_PRESENT_POS_VEL_CUR,\n        )\n        self.cur_scale = cur_scale\n    def _initialize_data(self):\n        \"\"\"Initializes the cached data.\"\"\"\n        self._cur_data = np.zeros(len(self.motor_ids), dtype=np.float32)\n    def _update_data(self, index: int, motor_id: int):\n        \"\"\"Updates the data index for the given motor ID.\"\"\"\n        cur = self.operation.getData(motor_id, ADDR_PRESENT_CURRENT,\n                                     LEN_PRESENT_CURRENT)\n        cur = unsigned_to_signed(cur, size=2)\n        self._cur_data[index] = float(cur) * self.cur_scale\n    def _get_data(self):\n        \"\"\"Returns a copy of the data.\"\"\"\n        return self._cur_data.copy()\n# Register global cleanup function.\natexit.register(dynamixel_cleanup_handler)\nif __name__ == '__main__':\n    import argparse\n    import itertools\n    parser = argparse.ArgumentParser()",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:539-571"
+    },
+    "97": {
+        "file_id": 4,
+        "content": "The code defines a Dynamixel client class that initializes cached data, updates current data for specific motor IDs, and returns the data when requested. It uses numpy to create zero-initialized arrays and handles unsigned to signed conversions. A global cleanup function is also registered.",
+        "type": "comment"
+    },
+    "98": {
+        "file_id": 4,
+        "content": "    parser.add_argument(\n        '-m',\n        '--motors',\n        required=True,\n        help='Comma-separated list of motor IDs.')\n    parser.add_argument(\n        '-d',\n        '--device',\n        default='/dev/ttyUSB0',\n        help='The Dynamixel device to connect to.')\n    parser.add_argument(\n        '-b', '--baud', default=1000000, help='The baudrate to connect with.')\n    parsed_args = parser.parse_args()\n    motors = [int(motor) for motor in parsed_args.motors.split(',')]\n    way_points = [np.zeros(len(motors)), np.full(len(motors), np.pi)]\n    with DynamixelClient(motors, parsed_args.device,\n                         parsed_args.baud) as dxl_client:\n        for step in itertools.count():\n            if step > 0 and step % 50 == 0:\n                way_point = way_points[(step // 100) % len(way_points)]\n                print('Writing: {}'.format(way_point.tolist()))\n                dxl_client.write_desired_pos(motors, way_point)\n            read_start = time.time()\n            pos_now, vel_now, cur_now = dxl_client.read_pos_vel_cur()",
+        "type": "code",
+        "location": "/aloha_scripts/dynamixel_client.py:572-598"
+    },
+    "99": {
+        "file_id": 4,
+        "content": "The code defines command line arguments for motor IDs, device to connect, and baudrate. It then parses the arguments, converts the motor IDs into a list, creates two waypoints using NumPy arrays, and establishes a connection with the Dynamixel client. The script continuously updates the motors' positions based on the current step in a loop, printing the new position and writing it to the client. It also measures the time taken for reading positions, velocities, and current values from the client.",
+        "type": "comment"
+    }
+}

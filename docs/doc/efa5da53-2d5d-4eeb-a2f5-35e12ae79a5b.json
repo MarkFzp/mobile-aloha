@@ -1,0 +1,15 @@
+{
+    "summary": "The code imports libraries, defines the \"main\" function that takes dataset and episode index arguments. It checks for dataset existence, retrieves attributes, prints data info, and adds \"--ismirror\" argument with \"store_true\" action.",
+    "details": [
+        {
+            "comment": "The code imports necessary libraries and defines a function \"main\" that takes arguments for dataset directory and episode index. It checks if the dataset exists, reads the attributes (sim and compress), retrieves qpos data, and prints the dataset name, episode index, and length of qpos data.",
+            "location": "\"/media/root/Prima/works/mobile-aloha/docs/src/aloha_scripts/get_episode_len.py\":0-31",
+            "content": "import os\nimport numpy as np\nimport cv2\nimport h5py\nimport argparse\nimport matplotlib.pyplot as plt\nfrom constants import DT\nimport IPython\ne = IPython.embed\ndef main(args):\n    dataset_dir = args['dataset_dir']\n    episode_idx = args['episode_idx']\n    dataset_name = f'episode_{episode_idx}'\n    dataset_path = os.path.join(dataset_dir, dataset_name + '.hdf5')\n    if not os.path.isfile(dataset_path):\n        print(f'Dataset does not exist at \\n{dataset_path}\\n')\n        exit()\n    with h5py.File(dataset_path, 'r') as root:\n        is_sim = root.attrs['sim']\n        compressed = root.attrs.get('compress', False)\n        qpos = root['/observations/qpos'][()]\n        print(f'dataset_name: {dataset_name}, episode {episode_idx}, len: {len(qpos)}')\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--dataset_dir', action='store', type=str, help='Dataset dir.', required=True)\n    parser.add_argument('--episode_idx', action='store', type=int, help='Episode index.', required=False)"
+        },
+        {
+            "comment": "This code adds an argument called \"--ismirror\" and sets its action to \"store_true\". The \"main()\" function is then called with the parsed arguments.",
+            "location": "\"/media/root/Prima/works/mobile-aloha/docs/src/aloha_scripts/get_episode_len.py\":32-33",
+            "content": "    parser.add_argument('--ismirror', action='store_true')\n    main(vars(parser.parse_args()))"
+        }
+    ]
+}

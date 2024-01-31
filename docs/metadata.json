@@ -1,0 +1,145 @@
+{
+    "url": {
+        "full": "https://github.com/MarkFzp/mobile-aloha",
+        "partial": "MarkFzp/mobile-aloha"
+    },
+    "file_mapping": {
+        "0": {
+            "filepath": "/CMakeLists.txt",
+            "entry_id": 0,
+            "language_id": "cmake"
+        },
+        "1": {
+            "filepath": "/README.md",
+            "entry_id": 4,
+            "language_id": "markdown"
+        },
+        "2": {
+            "filepath": "/aloha_scripts/auto_record.sh",
+            "entry_id": 26,
+            "language_id": "shell"
+        },
+        "3": {
+            "filepath": "/aloha_scripts/constants.py",
+            "entry_id": 30,
+            "language_id": "python"
+        },
+        "4": {
+            "filepath": "/aloha_scripts/dynamixel_client.py",
+            "entry_id": 56,
+            "language_id": "python"
+        },
+        "5": {
+            "filepath": "/aloha_scripts/example_waypoint_pid.py",
+            "entry_id": 102,
+            "language_id": "python"
+        },
+        "6": {
+            "filepath": "/aloha_scripts/get_episode_len.py",
+            "entry_id": 112,
+            "language_id": "python"
+        },
+        "7": {
+            "filepath": "/aloha_scripts/one_side_teleop.py",
+            "entry_id": 118,
+            "language_id": "python"
+        },
+        "8": {
+            "filepath": "/aloha_scripts/real_env.py",
+            "entry_id": 128,
+            "language_id": "python"
+        },
+        "9": {
+            "filepath": "/aloha_scripts/realsense_test.py",
+            "entry_id": 154,
+            "language_id": "python"
+        },
+        "10": {
+            "filepath": "/aloha_scripts/record_episodes.py",
+            "entry_id": 160,
+            "language_id": "python"
+        },
+        "11": {
+            "filepath": "/aloha_scripts/replay_and_record_episodes.py",
+            "entry_id": 188,
+            "language_id": "python"
+        },
+        "12": {
+            "filepath": "/aloha_scripts/replay_episodes.py",
+            "entry_id": 198,
+            "language_id": "python"
+        },
+        "13": {
+            "filepath": "/aloha_scripts/robot_utils.py",
+            "entry_id": 212,
+            "language_id": "python"
+        },
+        "14": {
+            "filepath": "/aloha_scripts/sleep.py",
+            "entry_id": 230,
+            "language_id": "python"
+        },
+        "15": {
+            "filepath": "/aloha_scripts/speed_test.py",
+            "entry_id": 236,
+            "language_id": "python"
+        },
+        "16": {
+            "filepath": "/aloha_scripts/test.py",
+            "entry_id": 242,
+            "language_id": "python"
+        },
+        "17": {
+            "filepath": "/aloha_scripts/visualize_episodes.py",
+            "entry_id": 250,
+            "language_id": "python"
+        },
+        "18": {
+            "filepath": "/aloha_scripts/waypoint_control.py",
+            "entry_id": 268,
+            "language_id": "python"
+        },
+        "19": {
+            "filepath": "/commands.txt",
+            "entry_id": 280,
+            "language_id": "plain-text"
+        },
+        "20": {
+            "filepath": "/config/master_modes_left.yaml",
+            "entry_id": 284,
+            "language_id": "yaml"
+        },
+        "21": {
+            "filepath": "/config/master_modes_right.yaml",
+            "entry_id": 288,
+            "language_id": "yaml"
+        },
+        "22": {
+            "filepath": "/config/puppet_modes_left.yaml",
+            "entry_id": 292,
+            "language_id": "yaml"
+        },
+        "23": {
+            "filepath": "/config/puppet_modes_right.yaml",
+            "entry_id": 296,
+            "language_id": "yaml"
+        },
+        "24": {
+            "filepath": "/launch/4arms_teleop.launch",
+            "entry_id": 300,
+            "language_id": "text"
+        },
+        "25": {
+            "filepath": "/package.xml",
+            "entry_id": 316,
+            "language_id": "xml"
+        },
+        "26": {
+            "filepath": "/setup.py",
+            "entry_id": 322,
+            "language_id": "python"
+        }
+    },
+    "project_name": "mobile-aloha",
+    "split_count": 4
+}

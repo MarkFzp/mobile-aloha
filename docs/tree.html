@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="github-markdown.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <title>Project structure of: MarkFzp/mobile-aloha</title>
+    <style>
+        .directory:hover {
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        :target {
+            background-color: yellow !important;
+        }
+
+        .folded::before {
+            content: '\25B6';
+            margin-right: 8px;
+            /* Add space between marker and text */
+        }
+
+        .expanded::before {
+            content: '\25BC';
+            margin-right: 8px;
+            /* Add space between marker and text */
+        }
+    </style>
+    <script>
+        function toggleVisibility(element) {
+            let mclass = element.getAttribute("class");
+            if (mclass == "expanded") {
+                element.setAttribute('class', 'folded');
+            } else {
+                element.setAttribute('class', 'expanded');
+            }
+            const siblings = element.parentNode.children;
+            for (const sibling of siblings) {
+                if (sibling !== element) {
+                    sibling.style.display = (sibling.style.display === 'none') ? 'block' : 'none';
+                }
+            }
+        }
+    </script>
+    <style>
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+
+        @media (max-width: 767px) {
+            .markdown-body {
+                padding: 15px;
+            }
+
+            .partial-repository-url {
+                display: none;
+            }
+        }
+
+        ul {
+            list-style: none;
+        }
+        #feeling-lucky:hover{
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <article class="markdown-body">
+        <h2>Project structure<span hierarchy="0" class="partial-repository-url"> of: MarkFzp/mobile-aloha</span><div style="float: right;"><a title="Document index" style="margin:3.5px;" href="index.html"><i class="bi bi-search"></i></a><a title="Feeling lucky" style="margin:3.5px;" id="feeling-lucky" href="#"><i class="bi bi-dice-3"></i></a><a title="Expand tree" style="margin:3.5px;" href="tree.html?full=true" id="expand-tree"><i class="bi bi-caret-down-square"></i></a></div></h2>
+<ul>
+<li><span hierarchy="0" class="expanded" onclick="toggleVisibility(this)" ><strong class="directory" id="/"><code>mobile-aloha</code></strong> <em>System Configuration and Robot Operations</em></span><ul>
+<li><span hierarchy="1" class="expanded" onclick="toggleVisibility(this)" ><strong class="directory" id="/aloha_scripts/"><code>aloha&UnderBar;scripts</code></strong> <em>Robotics control and vision scripts directory</em></span><ul>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/auto_record.sh" id="/aloha_scripts/auto_record.sh"><code>auto&UnderBar;record&period;sh</code></a> <em>Checks episode count, runs task, stops on failure.</em></li>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/constants.py" id="/aloha_scripts/constants.py"><code>constants&period;py</code></a> <em>Aloha Mobile task constants and functions.</em></li>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/dynamixel_client.py" id="/aloha_scripts/dynamixel_client.py"><code>dynamixel&UnderBar;client&period;py</code></a> <em>Dynamixel robot communication simplified with Python module.</em></li>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/example_waypoint_pid.py" id="/aloha_scripts/example_waypoint_pid.py"><code>example&UnderBar;waypoint&UnderBar;pid&period;py</code></a> <em>Control PID and differential drive for a robot with waypoint tracking.</em></li>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/get_episode_len.py" id="/aloha_scripts/get_episode_len.py"><code>get&UnderBar;episode&UnderBar;len&period;py</code></a> <em>Retrieves episode length from dataset.</em></li>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/one_side_teleop.py" id="/aloha_scripts/one_side_teleop.py"><code>one&UnderBar;side&UnderBar;teleop&period;py</code></a> <em>Python script for one-sided robot arm teleoperation with gripper control.</em></li>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/real_env.py" id="/aloha_scripts/real_env.py"><code>real&UnderBar;env&period;py</code></a> <em>Real bi-manual manipulation and environment handling script</em></li>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/realsense_test.py" id="/aloha_scripts/realsense_test.py"><code>realsense&UnderBar;test&period;py</code></a> <em>Realsense test script: pose capture, velocity calculation, plotting.</em></li>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/record_episodes.py" id="/aloha_scripts/record_episodes.py"><code>record&UnderBar;episodes&period;py</code></a> <em>Manages four robots, sets modes, handles grippers, collects data.</em></li>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/replay_and_record_episodes.py" id="/aloha_scripts/replay_and_record_episodes.py"><code>replay&UnderBar;and&UnderBar;record&UnderBar;episodes&period;py</code></a> <em>Replay and record smoothed dataset episodes.</em></li>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/replay_episodes.py" id="/aloha_scripts/replay_episodes.py"><code>replay&UnderBar;episodes&period;py</code></a> <em>Simulates environment, predicts output, measures velocities.</em></li>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/robot_utils.py" id="/aloha_scripts/robot_utils.py"><code>robot&UnderBar;utils&period;py</code></a> <em>Robot arm control, image recording, and calibration functions.</em></li>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/sleep.py" id="/aloha_scripts/sleep.py"><code>sleep&period;py</code></a> <em>Script controls bot arm movements for initial positions and master.</em></li>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/speed_test.py" id="/aloha_scripts/speed_test.py"><code>speed&UnderBar;test&period;py</code></a> <em>Speed test script for RealSense robot using Python</em></li>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/test.py" id="/aloha_scripts/test.py"><code>test&period;py</code></a> <em>Robot control script for RealSense2 data, PID motion commands, visualization.</em></li>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/visualize_episodes.py" id="/aloha_scripts/visualize_episodes.py"><code>visualize&UnderBar;episodes&period;py</code></a> <em>Visualizes HDF5 datasets with custom labeling and y-axis limits.</em></li>
+<li><a class="file_link" href="index.html?q=/aloha_scripts/waypoint_control.py" id="/aloha_scripts/waypoint_control.py"><code>waypoint&UnderBar;control&period;py</code></a> <em>Waypoint control script for robot motion.</em></li>
+</ul>
+</li>
+<li><a class="file_link" href="index.html?q=/CMakeLists.txt" id="/CMakeLists.txt"><code>CMakeLists&period;txt</code></a> <em>Sets CMake parameters for ROS project</em></li>
+<li><a class="file_link" href="index.html?q=/commands.txt" id="/commands.txt"><code>commands&period;txt</code></a> <em>Sets latency timers and creates links for ttyUSB devices.</em></li>
+<li><span hierarchy="1" class="expanded" onclick="toggleVisibility(this)" ><strong class="directory" id="/config/"><code>config</code></strong> <em>Robot and Puppet Configs</em></span><ul>
+<li><a class="file_link" href="index.html?q=/config/master_modes_left.yaml" id="/config/master_modes_left.yaml"><code>master&UnderBar;modes&UnderBar;left&period;yaml</code></a> <em>Left master device config, disabled torque for singles.</em></li>
+<li><a class="file_link" href="index.html?q=/config/master_modes_right.yaml" id="/config/master_modes_right.yaml"><code>master&UnderBar;modes&UnderBar;right&period;yaml</code></a> <em>Right robot side config (port, torque enable arm, gripper)</em></li>
+<li><a class="file_link" href="index.html?q=/config/puppet_modes_left.yaml" id="/config/puppet_modes_left.yaml"><code>puppet&UnderBar;modes&UnderBar;left&period;yaml</code></a> <em>Puppet left device port config with modes for arm and gripper.</em></li>
+<li><a class="file_link" href="index.html?q=/config/puppet_modes_right.yaml" id="/config/puppet_modes_right.yaml"><code>puppet&UnderBar;modes&UnderBar;right&period;yaml</code></a> <em>Puppet arm right, modes and profiles for position control.</em></li>
+</ul>
+</li>
+<li><span hierarchy="1" class="expanded" onclick="toggleVisibility(this)" ><strong class="directory" id="/launch/"><code>launch</code></strong></span><ul>
+<li><a class="file_link" href="index.html?q=/launch/4arms_teleop.launch" id="/launch/4arms_teleop.launch"><code>4arms&UnderBar;teleop&period;launch</code></a> <em>Configure 4-arm robot for teleoperation with camera streaming.</em></li>
+</ul>
+</li>
+<li><a class="file_link" href="index.html?q=/package.xml" id="/package.xml"><code>package&period;xml</code></a> <em>"aloha": ROS package, dependencies, exports by Tony Zhao.</em></li>
+<li><a class="file_link" href="index.html?q=/README.md" id="/README.md"><code>README&period;md</code></a> <em>Install ROS for Interbotix XS robot on Ubuntu 22.04, troubleshooting included.</em></li>
+<li><a class="file_link" href="index.html?q=/setup.py" id="/setup.py"><code>setup&period;py</code></a> <em>Setup Python package 'aloha' with MIT License.</em></li>
+</ul>
+</li>
+</ul>
+    </article>
+    <script type="text/javascript">
+        function getQueryParams() {
+            var search = window.location.search.substring(1); // Remove leading '?'
+            var queryParams = {};
+            search.split('&').forEach(function (pair) {
+                var parts = pair.split('=');
+                var key = decodeURIComponent(parts[0]);
+                var value = decodeURIComponent(parts[1]);
+                queryParams[key] = value;
+            });
+            return queryParams;
+        }
+
+        const queryParams = getQueryParams(window.location.search);
+        const show_full = queryParams.full == "true";
+        //const is_random = queryParams.random == 'true';
+        function feelingLucky() {
+            var elements = document.getElementsByClassName("file_link");
+            var randomIndex = Math.floor(Math.random() * elements.length);
+            window.location = elements[randomIndex].href;
+        }
+        //if (is_random) {feelingLucky();}
+        document.getElementById("feeling-lucky").onclick = feelingLucky;
+        if (!show_full) {
+            const spans = document.querySelectorAll('span');
+            for (let span of spans) {
+                if (span.getAttribute("hierarchy") == '0') { continue }
+                toggleVisibility(span);
+            }
+        } else {
+            const expand_elem = document.getElementById('expand-tree');
+            expand_elem.setAttribute("href", "tree.html");
+            expand_elem.setAttribute("title", "Undo expand");
+            expand_elem.innerHTML = '<i class="bi bi-caret-up-square"></i>'
+        }
+
+    </script>
+</body>
+
+</html>

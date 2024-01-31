@@ -1,0 +1,10 @@
+{
+    "summary": "The code configures a port \"/dev/ttyDXL_master_left\" for left master device and disables torque for arm and gripper singles.",
+    "details": [
+        {
+            "comment": "The code configures a port \"/dev/ttyDXL_master_left\" for left master device and disables torque for arm and gripper singles.",
+            "location": "\"/media/root/Prima/works/mobile-aloha/docs/src/config/master_modes_left.yaml\":0-8",
+            "content": "port: /dev/ttyDXL_master_left\ngroups:\n  arm:\n    torque_enable: false\nsingles:\n  gripper:\n    torque_enable: false"
+        }
+    ]
+}

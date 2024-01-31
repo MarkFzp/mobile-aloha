@@ -1,0 +1,15 @@
+{
+    "summary": "This code utilizes RealSense to capture pose data, extracts and stores it for analysis, calculates velocity, plots it, and saves as 'rs_vel.png'.",
+    "details": [
+        {
+            "comment": "The code initializes a RealSense pipeline, enables the pose stream, and starts capturing frames. It then extracts pose data from each frame, stores it in lists for further analysis, and continues to capture until interrupted.",
+            "location": "\"/media/root/Prima/works/mobile-aloha/docs/src/aloha_scripts/realsense_test.py\":0-40",
+            "content": "import pyrealsense2 as rs\nimport time\nfrom pprint import pprint\nfrom collections import namedtuple\nfrom functools import partial\nfrom matplotlib import pyplot as plt\nattrs = [\n    'acceleration',\n    'angular_acceleration',\n    'angular_velocity',\n    'mapper_confidence',\n    'rotation',\n    'tracker_confidence',\n    'translation',\n    'velocity',\n    ]\nPose = namedtuple('Pose', attrs)\ndef main():\n    pipeline = rs.pipeline()\n    cfg = rs.config()\n    # if only pose stream is enabled, fps is higher (202 vs 30)\n    cfg.enable_stream(rs.stream.pose)\n    pipeline.start(cfg)\n    poses = []\n    z_vels = []\n    x_vels = []\n    y_vels = []\n    try:\n        print('Start!')\n        while True:\n            frames = pipeline.wait_for_frames()\n            pose_frame = frames.get_pose_frame()\n            if pose_frame:\n                pose = pose_frame.get_pose_data()\n                n = pose_frame.get_frame_number()\n                timestamp = pose_frame.get_timestamp()\n                p = Pose(*map(partial(getattr, pose), attrs))\n                z_vel = pose.velocity.z"
+        },
+        {
+            "comment": "This code seems to be part of a larger program that captures real-sense pose data, calculates velocity from the data and plots it. It appends z, x and y velocities into lists for 1000 poses before returning. After capturing data, it prints out duration and frames per second (fps), then plots the velocity data. Finally, it saves and displays the plot as 'rs_vel.png'.",
+            "location": "\"/media/root/Prima/works/mobile-aloha/docs/src/aloha_scripts/realsense_test.py\":41-68",
+            "content": "                y_vel = pose.velocity.y\n                x_vel = pose.velocity.x\n                z_vels.append(z_vel)\n                x_vels.append(x_vel)\n                y_vels.append(y_vel)\n                poses.append((n, timestamp, p))\n                if len(poses) == 1000:\n                    return\n            time.sleep(0.02)\n    finally:\n        print('End!')\n        pipeline.stop()\n        duration = (poses[-1][1]-poses[0][1])/1000\n        print(f'start: {poses[0][1]}')\n        print(f'end:   {poses[-1][1]}')\n        print(f'duration: {duration}s')\n        print(f'fps: {len(poses)/duration}')\n        plt.plot(z_vels, label='z_vel')\n        plt.plot(x_vels, label='x_vel')\n        plt.plot(y_vels, label='y_vel')\n        plt.legend()\n        plt.savefig('rs_vel.png')\n        plt.show()\nif __name__ == \"__main__\":\n    main()"
+        }
+    ]
+}

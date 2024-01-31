@@ -1,0 +1,10 @@
+{
+    "summary": "This code retrieves the serial attributes of four ttyUSB devices using udevadm info and filters the results with grep. It then sets an ID_MM_DEVICE_IGNORE attribute to 1 for each device, adjusts latency timers, and creates symbolic links (ttyDXL_puppet_left, ttyDXL_master_right, ttyDXL_master_left, ttyDXL_puppet_right) for each device.",
+    "details": [
+        {
+            "comment": "This code retrieves the serial attributes of four ttyUSB devices using udevadm info and filters the results with grep. It then sets an ID_MM_DEVICE_IGNORE attribute to 1 for each device, adjusts latency timers, and creates symbolic links (ttyDXL_puppet_left, ttyDXL_master_right, ttyDXL_master_left, ttyDXL_puppet_right) for each device.",
+            "location": "\"/media/root/Prima/works/mobile-aloha/docs/src/commands.txt\":0-5",
+            "content": "udevadm info --name=/dev/ttyUSB0 --attribute-walk | grep serial\nSUBSYSTEM==\"tty\", ATTRS{serial}==\"FT6Z5N1W\", ENV{ID_MM_DEVICE_IGNORE}=\"1\", ATTR{device/latency_timer}=\"1\", SYMLINK+=\"ttyDXL_puppet_left\"\nSUBSYSTEM==\"tty\", ATTRS{serial}==\"FT66U3A8\", ENV{ID_MM_DEVICE_IGNORE}=\"1\", ATTR{device/latency_timer}=\"1\", SYMLINK+=\"ttyDXL_master_right\"\nSUBSYSTEM==\"tty\", ATTRS{serial}==\"FT66U2XR\", ENV{ID_MM_DEVICE_IGNORE}=\"1\", ATTR{device/latency_timer}=\"1\", SYMLINK+=\"ttyDXL_master_left\"\nSUBSYSTEM==\"tty\", ATTRS{serial}==\"FT6Z5NYV\", ENV{ID_MM_DEVICE_IGNORE}=\"1\", ATTR{device/latency_timer}=\"1\", SYMLINK+=\"ttyDXL_puppet_right\""
+        }
+    ]
+}

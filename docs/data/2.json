@@ -1,0 +1,541 @@
+{
+    "200": {
+        "file_id": 12,
+        "content": "import os\nimport h5py\nimport numpy as np\nfrom robot_utils import move_grippers, calibrate_linear_vel, smooth_base_action, postprocess_base_action\nimport argparse\nimport matplotlib.pyplot as plt\nfrom real_env import make_real_env\nfrom constants import JOINT_NAMES, PUPPET_GRIPPER_JOINT_OPEN, FPS\nimport time\nimport IPython\ne = IPython.embed\nSTATE_NAMES = JOINT_NAMES + [\"gripper\", 'left_finger', 'right_finger']\ndef main(args):\n    dataset_dir = args['dataset_dir']\n    episode_idx = args['episode_idx']\n    dataset_name = f'episode_{episode_idx}'\n    actuator_network_dir = args['actuator_network_dir']\n    history_len = args['history_len']\n    future_len = args['future_len']\n    prediction_len = args['prediction_len']\n    use_actuator_net = actuator_network_dir is not None\n    dataset_path = os.path.join(dataset_dir, dataset_name + '.hdf5')\n    if not os.path.isfile(dataset_path):\n        print(f'Dataset does not exist at \\n{dataset_path}\\n')\n        exit()\n    with h5py.File(dataset_path, 'r') as root:\n        actions = root['/action'][()]",
+        "type": "code",
+        "location": "/aloha_scripts/replay_episodes.py:1-32"
+    },
+    "201": {
+        "file_id": 12,
+        "content": "The code is importing necessary libraries and defining a function called \"main\" which takes arguments for dataset directory, episode index, actuator network directory, history length, future length, and prediction length. It checks if the required dataset exists, then reads the dataset from a h5py file and assigns the action data to a variable named 'actions'.",
+        "type": "comment"
+    },
+    "202": {
+        "file_id": 12,
+        "content": "        base_actions = root['/base_action'][()]\n    if use_actuator_net:\n        from train_actuator_network import ActuatorNetwork\n        import torch\n        import pickle\n        actuator_network = ActuatorNetwork(prediction_len)\n        actuator_network_path = os.path.join(actuator_network_dir, 'actuator_net_last.ckpt')\n        loading_status = actuator_network.load_state_dict(torch.load(actuator_network_path))\n        actuator_network.eval()\n        actuator_network.cuda()\n        print(f'Loaded actuator network from: {actuator_network_path}, {loading_status}')\n        actuator_stats_path  = os.path.join(actuator_network_dir, 'actuator_net_stats.pkl')\n        with open(actuator_stats_path, 'rb') as f:\n            actuator_stats = pickle.load(f)\n        norm_observed_speed = (base_actions - actuator_stats[\"observed_speed_mean\"]) / actuator_stats[\"observed_speed_std\"]\n        out_unnorm_fn = lambda x: (x * actuator_stats[\"commanded_speed_std\"]) + actuator_stats[\"commanded_speed_mean\"]\n        history_pad = np.zeros((history_len, 2))",
+        "type": "code",
+        "location": "/aloha_scripts/replay_episodes.py:33-53"
+    },
+    "203": {
+        "file_id": 12,
+        "content": "The code is initializing an actuator network and loading its state from a checkpoint file. It also loads the actuator statistics from a separate pickle file. The observed speed is normalized using these statistics, and a lambda function is defined to unnormalize the commanded speeds.",
+        "type": "comment"
+    },
+    "204": {
+        "file_id": 12,
+        "content": "        future_pad = np.zeros((future_len, 2))\n        norm_observed_speed = np.concatenate([history_pad, norm_observed_speed, future_pad], axis=0)\n        episode_len = base_actions.shape[0]\n        assert(episode_len % prediction_len == 0)\n        processed_base_actions = []\n        for t in range(0, episode_len, prediction_len):\n            offset_start_ts = t + history_len\n            actuator_net_in = norm_observed_speed[offset_start_ts-history_len: offset_start_ts+future_len]\n            actuator_net_in = torch.from_numpy(actuator_net_in).float().unsqueeze(dim=0).cuda()\n            pred = actuator_network(actuator_net_in)\n            pred = pred.detach().cpu().numpy()[0]\n            processed_base_actions += out_unnorm_fn(pred).tolist()\n        processed_base_actions = np.array(processed_base_actions)\n        assert processed_base_actions.shape == base_actions.shape\n        plt.plot(base_actions[:, 0], label='action_linear')\n        plt.plot(processed_base_actions[:, 0], '--', label='processed_action_linear')",
+        "type": "code",
+        "location": "/aloha_scripts/replay_episodes.py:54-73"
+    },
+    "205": {
+        "file_id": 12,
+        "content": "Code pads the input, concatenates it, and performs a prediction using an actuator network. The result is processed and plotted alongside the original action.",
+        "type": "comment"
+    },
+    "206": {
+        "file_id": 12,
+        "content": "        plt.plot(base_actions[:, 1], label='action_angular')\n        plt.plot(processed_base_actions[:, 1], '--', label='processed_action_angular')\n        plt.plot()\n        plt.legend()\n        plt.show()\n    else:\n        # processed_base_actions = smooth_base_action(base_actions)\n        processed_base_actions = base_actions\n    env = make_real_env(init_node=True, setup_base=True)\n    env.reset()\n    obs_wheels = []\n    obs_tracer = []\n    time0 = time.time()\n    DT = 1 / FPS\n    for action, base_action in zip(actions, processed_base_actions):\n        time1 = time.time()\n        # base_action = calibrate_linear_vel(base_action, c=0.19)\n        # base_action = postprocess_base_action(base_action)\n        ts = env.step(action, base_action, get_tracer_vel=True)\n        obs_wheels.append(ts.observation['base_vel'])\n        obs_tracer.append(ts.observation['tracer_vel'])\n        time.sleep(max(0, DT - (time.time() - time1)))\n    print(f'Avg fps: {len(actions) / (time.time() - time0)}')\n    obs_wheels = np.array(obs_wheels)",
+        "type": "code",
+        "location": "/aloha_scripts/replay_episodes.py:74-99"
+    },
+    "207": {
+        "file_id": 12,
+        "content": "This code plots the action angular values and processed action angular values, then simulates a real environment with base actions, collects observations on wheel and tracer velocities, and calculates average frames per second (FPS) for the simulation.",
+        "type": "comment"
+    },
+    "208": {
+        "file_id": 12,
+        "content": "    obs_tracer = np.array(obs_tracer)\n    plt.plot(base_actions[:, 0], label='action_linear')\n    plt.plot(processed_base_actions[:, 0], '--', label='processed_action_linear')\n    plt.plot(obs_wheels[:, 0], '--', label='obs_wheels_linear')\n    plt.plot(obs_tracer[:, 0], '-.', label='obs_tracer_linear')\n    plt.plot()\n    plt.legend()\n    plt.savefig('replay_episodes_linear_vel.png', dpi=300)\n    plt.clf()\n    plt.plot(base_actions[:, 1], label='action_angular')\n    plt.plot(processed_base_actions[:, 1], '--', label='processed_action_angular')\n    plt.plot(obs_wheels[:, 1], '--', label='obs_wheels_angular')\n    plt.plot(obs_tracer[:, 1], '-.', label='obs_tracer_angular')\n    plt.plot()\n    plt.legend()\n    plt.savefig('replay_episodes_angular_vel.png', dpi=300)\n    move_grippers([env.puppet_bot_left, env.puppet_bot_right], [PUPPET_GRIPPER_JOINT_OPEN] * 2, move_time=0.5)  # open\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--dataset_dir', action='store', type=str, help='Dataset dir.', required=True)",
+        "type": "code",
+        "location": "/aloha_scripts/replay_episodes.py:100-124"
+    },
+    "209": {
+        "file_id": 12,
+        "content": "This code plots and saves two figures: 'replay_episodes_linear_vel.png' and 'replay_episodes_angular_vel.png'. It first plots linear and angular velocities of base, processed base, wheels, and tracer. After saving the linear figure, it opens both grippers. The script assumes the presence of a variable named 'env', which is likely an environment object. The user can specify the dataset directory using the command line argument '--dataset_dir'.",
+        "type": "comment"
+    },
+    "210": {
+        "file_id": 12,
+        "content": "    parser.add_argument('--episode_idx', action='store', type=int, help='Episode index.', required=False)\n    parser.add_argument('--actuator_network_dir', action='store', type=str, help='actuator_network_dir', required=False)\n    parser.add_argument('--history_len', action='store', type=int)\n    parser.add_argument('--future_len', action='store', type=int)\n    parser.add_argument('--prediction_len', action='store', type=int)\n    main(vars(parser.parse_args()))",
+        "type": "code",
+        "location": "/aloha_scripts/replay_episodes.py:125-130"
+    },
+    "211": {
+        "file_id": 12,
+        "content": "This code snippet uses the argparse module to add command line arguments for episode index, actuator network directory, history length, future length, and prediction length. These options are stored in a dictionary and passed as arguments to the main function.",
+        "type": "comment"
+    },
+    "212": {
+        "file_id": 13,
+        "content": "/aloha_scripts/robot_utils.py",
+        "type": "filepath"
+    },
+    "213": {
+        "file_id": 13,
+        "content": "The code initializes an ImageRecorder class for acquiring images and frequencies, sets up camera variables and subscribers, and includes a Recorder class with optional debug mode. It also initializes variables and callback functions for controlling a robot's arm and gripper with smooth movement and calibration functions.",
+        "type": "summary"
+    },
+    "214": {
+        "file_id": 13,
+        "content": "import numpy as np\nimport time\nfrom constants import DT\nfrom interbotix_xs_msgs.msg import JointSingleCommand\nimport IPython\ne = IPython.embed\nclass ImageRecorder:\n    def __init__(self, init_node=True, is_debug=False):\n        from collections import deque\n        import rospy\n        from cv_bridge import CvBridge\n        from sensor_msgs.msg import Image\n        self.is_debug = is_debug\n        self.bridge = CvBridge()\n        self.camera_names = ['cam_high', 'cam_left_wrist', 'cam_right_wrist'] #['cam_high', 'cam_low', 'cam_left_wrist', 'cam_right_wrist']\n        if init_node:\n            rospy.init_node('image_recorder', anonymous=True)\n        for cam_name in self.camera_names:\n            setattr(self, f'{cam_name}_image', None)\n            setattr(self, f'{cam_name}_secs', None)\n            setattr(self, f'{cam_name}_nsecs', None)\n            if cam_name == 'cam_high':\n                callback_func = self.image_cb_cam_high\n            elif cam_name == 'cam_low':\n                callback_func = self.image_cb_cam_low",
+        "type": "code",
+        "location": "/aloha_scripts/robot_utils.py:1-27"
+    },
+    "215": {
+        "file_id": 13,
+        "content": "The code is initializing an \"ImageRecorder\" class that utilizes various imports, such as numpy and rospy. It also sets up camera names and related variables for different cameras. The class initializes the camera image, time stamp, and subscribes to image topics with callback functions depending on the camera name.",
+        "type": "comment"
+    },
+    "216": {
+        "file_id": 13,
+        "content": "            elif cam_name == 'cam_left_wrist':\n                callback_func = self.image_cb_cam_left_wrist\n            elif cam_name == 'cam_right_wrist':\n                callback_func = self.image_cb_cam_right_wrist\n            else:\n                raise NotImplementedError\n            rospy.Subscriber(f\"/usb_{cam_name}/image_raw\", Image, callback_func)\n            if self.is_debug:\n                setattr(self, f'{cam_name}_timestamps', deque(maxlen=50))\n        time.sleep(0.5)\n    def image_cb(self, cam_name, data):\n        setattr(self, f'{cam_name}_image', self.bridge.imgmsg_to_cv2(data, desired_encoding='passthrough'))\n        setattr(self, f'{cam_name}_secs', data.header.stamp.secs)\n        setattr(self, f'{cam_name}_nsecs', data.header.stamp.nsecs)\n        # cv2.imwrite('/home/tonyzhao/Desktop/sample.jpg', cv_image)\n        if self.is_debug:\n            getattr(self, f'{cam_name}_timestamps').append(data.header.stamp.secs + data.header.stamp.secs * 1e-9)\n    def image_cb_cam_high(self, data):\n        cam_name = 'cam_high'",
+        "type": "code",
+        "location": "/aloha_scripts/robot_utils.py:28-48"
+    },
+    "217": {
+        "file_id": 13,
+        "content": "The code defines a subscriber function for camera image data from different cameras (cam_left_wrist, cam_right_wrist, and cam_high) and assigns specific callback functions for each camera. The callback functions will process the received images and timestamps if debug mode is enabled. Additionally, it includes a time.sleep(0.5) function to wait before processing data.",
+        "type": "comment"
+    },
+    "218": {
+        "file_id": 13,
+        "content": "        return self.image_cb(cam_name, data)\n    def image_cb_cam_low(self, data):\n        cam_name = 'cam_low'\n        return self.image_cb(cam_name, data)\n    def image_cb_cam_left_wrist(self, data):\n        cam_name = 'cam_left_wrist'\n        return self.image_cb(cam_name, data)\n    def image_cb_cam_right_wrist(self, data):\n        cam_name = 'cam_right_wrist'\n        return self.image_cb(cam_name, data)\n    def get_images(self):\n        image_dict = dict()\n        for cam_name in self.camera_names:\n            image_dict[cam_name] = getattr(self, f'{cam_name}_image')\n        return image_dict\n    def print_diagnostics(self):\n        def dt_helper(l):\n            l = np.array(l)\n            diff = l[1:] - l[:-1]\n            return np.mean(diff)\n        for cam_name in self.camera_names:\n            image_freq = 1 / dt_helper(getattr(self, f'{cam_name}_timestamps'))\n            print(f'{cam_name} {image_freq=:.2f}')\n        print()\nclass Recorder:\n    def __init__(self, side, init_node=True, is_debug=False):\n        from collections import deque",
+        "type": "code",
+        "location": "/aloha_scripts/robot_utils.py:49-81"
+    },
+    "219": {
+        "file_id": 13,
+        "content": "This code defines a class with methods for getting images from different camera sources and calculating image frequencies. It also includes a helper function for calculating the average time difference between timestamps. The Recorder class is initialized with a side parameter, optionally initializes a node, and has an is_debug flag.",
+        "type": "comment"
+    },
+    "220": {
+        "file_id": 13,
+        "content": "        import rospy\n        from sensor_msgs.msg import JointState\n        from interbotix_xs_msgs.msg import JointGroupCommand, JointSingleCommand\n        self.secs = None\n        self.nsecs = None\n        self.qpos = None\n        self.effort = None\n        self.arm_command = None\n        self.gripper_command = None\n        self.is_debug = is_debug\n        if init_node:\n            rospy.init_node('recorder', anonymous=True)\n        rospy.Subscriber(f\"/puppet_{side}/joint_states\", JointState, self.puppet_state_cb)\n        rospy.Subscriber(f\"/puppet_{side}/commands/joint_group\", JointGroupCommand, self.puppet_arm_commands_cb)\n        rospy.Subscriber(f\"/puppet_{side}/commands/joint_single\", JointSingleCommand, self.puppet_gripper_commands_cb)\n        if self.is_debug:\n            self.joint_timestamps = deque(maxlen=50)\n            self.arm_command_timestamps = deque(maxlen=50)\n            self.gripper_command_timestamps = deque(maxlen=50)\n        time.sleep(0.1)\n    def puppet_state_cb(self, data):\n        self.qpos = data.position",
+        "type": "code",
+        "location": "/aloha_scripts/robot_utils.py:82-106"
+    },
+    "221": {
+        "file_id": 13,
+        "content": "This code initializes necessary variables and sets up subscribers for joint states, arm commands, and gripper commands. It also optionally initializes debug-related deques and waits 0.1 seconds before processing joint state data.",
+        "type": "comment"
+    },
+    "222": {
+        "file_id": 13,
+        "content": "        self.qvel = data.velocity\n        self.effort = data.effort\n        self.data = data\n        if self.is_debug:\n            self.joint_timestamps.append(time.time())\n    def puppet_arm_commands_cb(self, data):\n        self.arm_command = data.cmd\n        if self.is_debug:\n            self.arm_command_timestamps.append(time.time())\n    def puppet_gripper_commands_cb(self, data):\n        self.gripper_command = data.cmd\n        if self.is_debug:\n            self.gripper_command_timestamps.append(time.time())\n    def print_diagnostics(self):\n        def dt_helper(l):\n            l = np.array(l)\n            diff = l[1:] - l[:-1]\n            return np.mean(diff)\n        joint_freq = 1 / dt_helper(self.joint_timestamps)\n        arm_command_freq = 1 / dt_helper(self.arm_command_timestamps)\n        gripper_command_freq = 1 / dt_helper(self.gripper_command_timestamps)\n        print(f'{joint_freq=:.2f}\\n{arm_command_freq=:.2f}\\n{gripper_command_freq=:.2f}\\n')\ndef get_arm_joint_positions(bot):\n    return bot.arm.core.joint_states.position[:6]",
+        "type": "code",
+        "location": "/aloha_scripts/robot_utils.py:107-136"
+    },
+    "223": {
+        "file_id": 13,
+        "content": "This code initializes variables for joint velocity, effort, and data, and defines callback functions for arm and gripper commands. It also calculates frequencies of the joint timestamps, arm command timestamps, and gripper command timestamps for diagnostics printing. The get_arm_joint_positions function retrieves the positions of the first six joints of the robot's arm.",
+        "type": "comment"
+    },
+    "224": {
+        "file_id": 13,
+        "content": "def get_arm_gripper_positions(bot):\n    joint_position = bot.gripper.core.joint_states.position[6]\n    return joint_position\ndef move_arms(bot_list, target_pose_list, move_time=1):\n    num_steps = int(move_time / DT)\n    curr_pose_list = [get_arm_joint_positions(bot) for bot in bot_list]\n    traj_list = [np.linspace(curr_pose, target_pose, num_steps) for curr_pose, target_pose in zip(curr_pose_list, target_pose_list)]\n    for t in range(num_steps):\n        for bot_id, bot in enumerate(bot_list):\n            bot.arm.set_joint_positions(traj_list[bot_id][t], blocking=False)\n        time.sleep(DT)\ndef move_grippers(bot_list, target_pose_list, move_time):\n    gripper_command = JointSingleCommand(name=\"gripper\")\n    num_steps = int(move_time / DT)\n    curr_pose_list = [get_arm_gripper_positions(bot) for bot in bot_list]\n    traj_list = [np.linspace(curr_pose, target_pose, num_steps) for curr_pose, target_pose in zip(curr_pose_list, target_pose_list)]\n    for t in range(num_steps):\n        for bot_id, bot in enumerate(bot_list):",
+        "type": "code",
+        "location": "/aloha_scripts/robot_utils.py:138-157"
+    },
+    "225": {
+        "file_id": 13,
+        "content": "The code includes functions for controlling the robot's arms and grippers. The 'get_arm_gripper_positions' function retrieves the current position of the robot's gripper, while 'move_arms' sets the desired positions for all robots in the list over a specified duration. Similarly, 'move_grippers' sets the gripper positions for each robot over time. Both functions use linear interpolation to smoothly move the robot's joints.",
+        "type": "comment"
+    },
+    "226": {
+        "file_id": 13,
+        "content": "            gripper_command.cmd = traj_list[bot_id][t]\n            bot.gripper.core.pub_single.publish(gripper_command)\n        time.sleep(DT)\ndef setup_puppet_bot(bot):\n    bot.dxl.robot_reboot_motors(\"single\", \"gripper\", True)\n    bot.dxl.robot_set_operating_modes(\"group\", \"arm\", \"position\")\n    bot.dxl.robot_set_operating_modes(\"single\", \"gripper\", \"current_based_position\")\n    torque_on(bot)\ndef setup_master_bot(bot):\n    bot.dxl.robot_set_operating_modes(\"group\", \"arm\", \"pwm\")\n    bot.dxl.robot_set_operating_modes(\"single\", \"gripper\", \"current_based_position\")\n    torque_off(bot)\ndef set_standard_pid_gains(bot):\n    bot.dxl.robot_set_motor_registers(\"group\", \"arm\", 'Position_P_Gain', 800)\n    bot.dxl.robot_set_motor_registers(\"group\", \"arm\", 'Position_I_Gain', 0)\ndef set_low_pid_gains(bot):\n    bot.dxl.robot_set_motor_registers(\"group\", \"arm\", 'Position_P_Gain', 100)\n    bot.dxl.robot_set_motor_registers(\"group\", \"arm\", 'Position_I_Gain', 0)\ndef torque_off(bot):\n    bot.dxl.robot_torque_enable(\"group\", \"arm\", False)",
+        "type": "code",
+        "location": "/aloha_scripts/robot_utils.py:158-182"
+    },
+    "227": {
+        "file_id": 13,
+        "content": "This code contains functions for setting up and controlling a robot's movements, gripper, and motor settings. The `setup_puppet_bot` function initializes the puppet bot's motors, while `setup_master_bot` configures the master bot's arm movement. The `set_standard_pid_gains` and `set_low_pid_gains` functions adjust the robot's PID gains for position control of its arm. The `torque_on` and `torque_off` functions enable or disable torque for the group arm motors, respectively.",
+        "type": "comment"
+    },
+    "228": {
+        "file_id": 13,
+        "content": "    bot.dxl.robot_torque_enable(\"single\", \"gripper\", False)\ndef torque_on(bot):\n    bot.dxl.robot_torque_enable(\"group\", \"arm\", True)\n    bot.dxl.robot_torque_enable(\"single\", \"gripper\", True)\ndef calibrate_linear_vel(base_action, c=None):\n    if c is None:\n        c = 0.\n    v = base_action[..., 0]\n    w = base_action[..., 1]\n    base_action = base_action.copy()\n    base_action[..., 0] = v - c * w\n    return base_action\ndef smooth_base_action(base_action):\n    return np.stack([\n        np.convolve(base_action[:, i], np.ones(5)/5, mode='same') for i in range(base_action.shape[1])\n    ], axis=-1).astype(np.float32)\ndef postprocess_base_action(base_action):\n    linear_vel, angular_vel = base_action\n    angular_vel *= 0.9\n    return np.array([linear_vel, angular_vel])",
+        "type": "code",
+        "location": "/aloha_scripts/robot_utils.py:183-206"
+    },
+    "229": {
+        "file_id": 13,
+        "content": "The code contains functions for robot control: \"robot_torque_enable\" enables torque control for specific groups or individual joints, \"calibrate_linear_vel\" adjusts the linear velocity of the base action, \"smooth_base_action\" uses convolution to smooth the base action, and \"postprocess_base_action\" scales down the angular velocity.",
+        "type": "comment"
+    },
+    "230": {
+        "file_id": 14,
+        "content": "/aloha_scripts/sleep.py",
+        "type": "filepath"
+    },
+    "231": {
+        "file_id": 14,
+        "content": "This code initializes positions for bots, moves their arms to those positions, and if \"all\" is given, also moves master bot arms to different positions in a robotics control script.",
+        "type": "summary"
+    },
+    "232": {
+        "file_id": 14,
+        "content": "from interbotix_xs_modules.arm import InterbotixManipulatorXS\nfrom robot_utils import move_arms, torque_on\nimport argparse\ndef main():\n    argparser = argparse.ArgumentParser()\n    argparser.add_argument('--all', action='store_true', default=False)\n    args = argparser.parse_args()\n    puppet_bot_left = InterbotixManipulatorXS(robot_model=\"vx300s\", group_name=\"arm\", gripper_name=\"gripper\", robot_name=f'puppet_left', init_node=True)\n    puppet_bot_right = InterbotixManipulatorXS(robot_model=\"vx300s\", group_name=\"arm\", gripper_name=\"gripper\", robot_name=f'puppet_right', init_node=False)\n    master_bot_left = InterbotixManipulatorXS(robot_model=\"wx250s\", group_name=\"arm\", gripper_name=\"gripper\", robot_name=f'master_left', init_node=False)\n    master_bot_right = InterbotixManipulatorXS(robot_model=\"wx250s\", group_name=\"arm\", gripper_name=\"gripper\", robot_name=f'master_right', init_node=False)\n    all_bots = [puppet_bot_left, puppet_bot_right, master_bot_left, master_bot_right] if args.all else [puppet_bot_left, puppet_bot_right]",
+        "type": "code",
+        "location": "/aloha_scripts/sleep.py:1-15"
+    },
+    "233": {
+        "file_id": 14,
+        "content": "The code imports necessary libraries, defines a main function with argument parsing for the 'all' flag, creates instances of InterbotixManipulatorXS for puppet and master bots, and assigns them to all_bots list based on the 'all' flag.",
+        "type": "comment"
+    },
+    "234": {
+        "file_id": 14,
+        "content": "    master_bots = [master_bot_left, master_bot_right]\n    for bot in all_bots:\n        torque_on(bot)\n    puppet_sleep_position = (0, -1.7, 1.55, 0, 0.65, 0)\n    master_sleep_left_position = (-0.61, 0., 0.43, 0., 1.04, -0.65)\n    master_sleep_right_position = (0.61, 0., 0.43, 0., 1.04, 0.65)\n    all_positions = [puppet_sleep_position] * 2 + [master_sleep_left_position, master_sleep_right_position] if args.all else [puppet_sleep_position] * 2\n    move_arms(all_bots, all_positions, move_time=2)\n    if args.all:\n        master_sleep_left_position_2 = (0., 0.66, -0.27, -0.0, 1.1, 0)\n        master_sleep_right_position_2 = (0., 0.66, -0.27, -0.0, 1.1, 0)\n        move_arms(master_bots, [master_sleep_left_position_2, master_sleep_right_position_2], move_time=1)\nif __name__ == '__main__':\n    main()",
+        "type": "code",
+        "location": "/aloha_scripts/sleep.py:16-34"
+    },
+    "235": {
+        "file_id": 14,
+        "content": "This code initializes positions for a puppet and two master bots, then moves the arms of all bots to those positions. If the argument \"all\" is given, it also moves the arms of the two master bots to different positions. This is part of a robotics control script.",
+        "type": "comment"
+    },
+    "236": {
+        "file_id": 15,
+        "content": "/aloha_scripts/speed_test.py",
+        "type": "filepath"
+    },
+    "237": {
+        "file_id": 15,
+        "content": "The code initializes a RealSense pipeline, sets target velocities, gathers wheel and RealSense velocity data, plots the results, saves as 'vel.png', and adds a legend with matplotlib in Python.",
+        "type": "summary"
+    },
+    "238": {
+        "file_id": 15,
+        "content": "import pyagxrobots\nimport time\nfrom matplotlib import pyplot as plt\nimport pyrealsense2 as rs\ntracer = pyagxrobots.pysdkugv.TracerBase()\ntracer.EnableCAN()\npipeline = rs.pipeline()\ncfg = rs.config()\n# if only pose stream is enabled, fps is higher (202 vs 30)\ncfg.enable_stream(rs.stream.pose)\npipeline.start(cfg)\nrs_vels = []\nwheel_vels = []\ntarget_vels = []\nprint('Start!')\nfor i in range(40):\n    target_vel = 0.2\n    target_vels.append(target_vel)\n    # tracer.SetMotionCommand(linear_vel=target_vel)\n    tracer.SetMotionCommand(angular_vel=target_vel)\n    # wheel_vel = tracer.GetLinearVelocity()\n    wheel_vel = tracer.GetAngularVelocity()\n    wheel_vels.append(wheel_vel)\n    frames = pipeline.wait_for_frames()\n    pose_frame = frames.get_pose_frame()\n    pose = pose_frame.get_pose_data()\n    # rs_vel = pose.velocity.z\n    rs_vel = pose.angular_velocity.y\n    rs_vels.append(rs_vel)\n    time.sleep(0.05)\nprint('End!')\npipeline.stop()\nplt.plot(rs_vels, label='rs')\nplt.plot(wheel_vels, label='wheel')\nplt.plot(target_vels, label='target_vel')",
+        "type": "code",
+        "location": "/aloha_scripts/speed_test.py:1-42"
+    },
+    "239": {
+        "file_id": 15,
+        "content": "The code enables a tracer, initializes RealSense pipeline, sets target velocities for tracer's angular motion, gets wheel and RealSense velocity readings, and finally plots the obtained data.",
+        "type": "comment"
+    },
+    "240": {
+        "file_id": 15,
+        "content": "plt.legend()\nplt.savefig('vel.png')",
+        "type": "code",
+        "location": "/aloha_scripts/speed_test.py:43-44"
+    },
+    "241": {
+        "file_id": 15,
+        "content": "This code saves the current figure as an image named 'vel.png' and adds a legend to it using matplotlib library in Python.",
+        "type": "comment"
+    },
+    "242": {
+        "file_id": 16,
+        "content": "/aloha_scripts/test.py",
+        "type": "filepath"
+    },
+    "243": {
+        "file_id": 16,
+        "content": "This code imports libraries, processes RealSense2 data for robot control, calculates motion commands using PID controller, and visualizes angular velocity.",
+        "type": "summary"
+    },
+    "244": {
+        "file_id": 16,
+        "content": "#!/usr/bin/env python\n# coding: utf-8\n# In[1]:\nimport h5py\nimport matplotlib.pyplot as plt\nwith h5py.File('/home/mobile-aloha/data/aloha_mobile_fork/episode_19_replayed.hdf5', 'r') as f:\n    obs_wheels = f['obs_wheels'][:]\n    obs_tracer = f['obs_tracer'][:]\n    base_actions = f['base_action'][:]\n    plt.plot(base_actions[:, 0], label='action_linear')\n    plt.plot(base_actions[:, 1], label='action_angular')\n    plt.plot(obs_wheels[:, 0], '--', label='obs_wheels_linear')\n    plt.plot(obs_wheels[:, 1], '--', label='obs_wheels_angular')\n    plt.plot(obs_tracer[:, 0], '-.', label='obs_tracer_linear')\n    plt.plot(obs_tracer[:, 1], '-.', label='obs_tracer_angular')\n    plt.legend()\n    plt.show()\n# In[23]:\nimport pyrealsense2 as rs\nfrom pyquaternion import Quaternion\nimport numpy as np\nnp.set_printoptions(precision=3, suppress=True)\n# In[22]:\nimport pyagxrobots\ntracer = pyagxrobots.pysdkugv.TracerBase()\ntracer.EnableCAN()\n# In[24]:\npipeline = rs.pipeline()\ncfg = rs.config()\n# if only pose stream is enabled, fps is higher (202 vs 30)",
+        "type": "code",
+        "location": "/aloha_scripts/test.py:1-48"
+    },
+    "245": {
+        "file_id": 16,
+        "content": "This code imports necessary libraries, reads data from an HDF5 file, and plots action and observation values. It also sets up a RealSense2 pipeline for robot control and enables the CAN stream.",
+        "type": "comment"
+    },
+    "246": {
+        "file_id": 16,
+        "content": "cfg.enable_stream(rs.stream.pose)\npipeline.start(cfg)\n# In[41]:\nimport time\nset_vel = 0.05\nl = []\nfor _ in range(400):\n    frames = pipeline.wait_for_frames()\n    pose_frame = frames.get_pose_frame()\n    pose = pose_frame.get_pose_data()\n    q1 = Quaternion(w=pose.rotation.w, x=pose.rotation.x, y=pose.rotation.y, z=pose.rotation.z)\n    rotation = -np.array(q1.yaw_pitch_roll)[0]\n    rotation_vec = np.array([np.cos(rotation), np.sin(rotation)])\n    linear_vel_vec = np.array([pose.velocity.z, pose.velocity.x])\n    is_forward = rotation_vec.dot(linear_vel_vec) > 0\n    base_linear_vel = np.sqrt(pose.velocity.z ** 2 + pose.velocity.x ** 2) * (1 if is_forward else -1)\n    base_angular_vel = pose.angular_velocity.y\n    # print(rotation * 180 / np.pi, pose.angular_velocity.y, linear_vel_vec, is_forward, base_linear_vel)\n    # print(base_angular_vel)\n    l.append(base_angular_vel)\n    tracer.SetMotionCommand(linear_vel=0, angular_vel=set_vel)\n    time.sleep(0.02)\nfrom matplotlib import pyplot as plt\nplt.title(f'angular velocity cmd {set_vel}')",
+        "type": "code",
+        "location": "/aloha_scripts/test.py:49-76"
+    },
+    "247": {
+        "file_id": 16,
+        "content": "This code initializes a pose stream, starts the pipeline, and then continuously waits for frames. For each frame, it extracts the pose data, calculates rotation, linear velocity vector, base linear velocity, and base angular velocity. The motion command is set based on these calculated values. Finally, a plot is created showing the relationship between angular velocity commands and time.",
+        "type": "comment"
+    },
+    "248": {
+        "file_id": 16,
+        "content": "plt.plot([set_vel] * len(l), linestyle='--', color='red')\nplt.plot(l)\nplt.savefig(f'angular_velocity_{set_vel}.png')\n# In[10]:\nfrom simple_pid import PID\npid = PID(1, 0.1, 0.05, setpoint=np.array([2,2]))\naction = pid(np.array([0., 0.]))\naction\n# In[6]:\nframes = pipeline.wait_for_frames()\npose_frame = frames.get_pose_frame()\npose = pose_frame.get_pose_data()\npose.translation, pose.rotation\n# In[4]:\nframes = pipeline.wait_for_frames()\npose_frame = frames.get_pose_frame()\npose = pose_frame.get_pose_data()\npose.translation, pose.rotation\n# In[5]:\nframes = pipeline.wait_for_frames()\npose_frame = frames.get_pose_frame()\npose = pose_frame.get_pose_data()\npose.translation, pose.rotation\n# In[49]:\nq1 = Quaternion(w=pose.rotation.w, x=pose.rotation.x, y=pose.rotation.y, z=pose.rotation.z)\nnp.array(q1.yaw_pitch_roll) * 180 / np.pi\n# In[10]:\nq1 = Quaternion(w=pose.rotation.w, x=pose.rotation.x, y=pose.rotation.y, z=pose.rotation.z)\nnp.array(q1.yaw_pitch_roll) * 180 / np.pi\n# In[ ]:",
+        "type": "code",
+        "location": "/aloha_scripts/test.py:77-132"
+    },
+    "249": {
+        "file_id": 16,
+        "content": "This code snippet involves various steps for data processing and visualization. First, it plots angular velocity and saves it as a PNG image. Then, it uses a PID controller to determine an action based on the input. The code also retrieves pose data from frames, including translation and rotation, three times in a loop. Afterwards, it converts quaternion rotation values to yaw, pitch, and roll angles using Euler angles.",
+        "type": "comment"
+    },
+    "250": {
+        "file_id": 17,
+        "content": "/aloha_scripts/visualize_episodes.py",
+        "type": "filepath"
+    },
+    "251": {
+        "file_id": 17,
+        "content": "The code imports libraries, defines functions for loading HDF5 data and handling compressed datasets. It creates visualizations, saves to specified paths, generates dataset names, visualizes joint positions and arm commands over time with custom labeling and y-axis limits, and includes subfunctions for plotting efforts data and saving plots.",
+        "type": "summary"
+    },
+    "252": {
+        "file_id": 17,
+        "content": "import os\nimport numpy as np\nimport cv2\nimport h5py\nimport argparse\nimport matplotlib.pyplot as plt\nfrom constants import DT\nimport IPython\ne = IPython.embed\nJOINT_NAMES = [\"waist\", \"shoulder\", \"elbow\", \"forearm_roll\", \"wrist_angle\", \"wrist_rotate\"]\nSTATE_NAMES = JOINT_NAMES + [\"gripper\"]\nBASE_STATE_NAMES = [\"linear_vel\", \"angular_vel\"]\ndef load_hdf5(dataset_dir, dataset_name):\n    dataset_path = os.path.join(dataset_dir, dataset_name + '.hdf5')\n    if not os.path.isfile(dataset_path):\n        print(f'Dataset does not exist at \\n{dataset_path}\\n')\n        exit()\n    with h5py.File(dataset_path, 'r') as root:\n        is_sim = root.attrs['sim']\n        compressed = root.attrs.get('compress', False)\n        qpos = root['/observations/qpos'][()]\n        qvel = root['/observations/qvel'][()]\n        if 'effort' in root.keys():\n            effort = root['/observations/effort'][()]\n        else:\n            effort = None\n        action = root['/action'][()]\n        base_action = root['/base_action'][()]\n        image_dict = dict()",
+        "type": "code",
+        "location": "/aloha_scripts/visualize_episodes.py:1-34"
+    },
+    "253": {
+        "file_id": 17,
+        "content": "This code imports necessary libraries and defines constants for joint names, state names, and base state names. It also includes a function to load data from HDF5 files, retrieving various variables including qpos, qvel, effort, action, and base_action. The code handles cases where the dataset may not exist or be compressed.",
+        "type": "comment"
+    },
+    "254": {
+        "file_id": 17,
+        "content": "        for cam_name in root[f'/observations/images/'].keys():\n            image_dict[cam_name] = root[f'/observations/images/{cam_name}'][()]\n        if compressed:\n            compress_len = root['/compress_len'][()]\n    if compressed:\n        for cam_id, cam_name in enumerate(image_dict.keys()):\n            # un-pad and uncompress\n            padded_compressed_image_list = image_dict[cam_name]\n            image_list = []\n            for frame_id, padded_compressed_image in enumerate(padded_compressed_image_list): # [:1000] to save memory\n                image_len = int(compress_len[cam_id, frame_id])\n                compressed_image = padded_compressed_image\n                image = cv2.imdecode(compressed_image, 1)\n                image_list.append(image)\n            image_dict[cam_name] = image_list\n    return qpos, qvel, effort, action, base_action, image_dict\ndef main(args):\n    dataset_dir = args['dataset_dir']\n    episode_idx = args['episode_idx']\n    ismirror = args['ismirror']\n    if ismirror:\n        dataset_name = f'mirror_episode_{episode_idx}'",
+        "type": "code",
+        "location": "/aloha_scripts/visualize_episodes.py:35-60"
+    },
+    "255": {
+        "file_id": 17,
+        "content": "This code reads image data from a file, compresses it if necessary, and stores the uncompressed images in a dictionary. It takes episode index, dataset directory, and mirror flag as input parameters. If the mirror flag is true, it adds \"mirror_episode\" to the dataset name.",
+        "type": "comment"
+    },
+    "256": {
+        "file_id": 17,
+        "content": "    else:\n        dataset_name = f'episode_{episode_idx}'\n    qpos, qvel, effort, action, base_action, image_dict = load_hdf5(dataset_dir, dataset_name)\n    print('hdf5 loaded!!')\n    save_videos(image_dict, DT, video_path=os.path.join(dataset_dir, dataset_name + '_video.mp4'))\n    visualize_joints(qpos, action, plot_path=os.path.join(dataset_dir, dataset_name + '_qpos.png'))\n    # visualize_single(effort, 'effort', plot_path=os.path.join(dataset_dir, dataset_name + '_effort.png'))\n    # visualize_single(action - qpos, 'tracking_error', plot_path=os.path.join(dataset_dir, dataset_name + '_error.png'))\n    visualize_base(base_action, plot_path=os.path.join(dataset_dir, dataset_name + '_base_action.png'))\n    # visualize_timestamp(t_list, dataset_path) # TODO addn timestamp back\ndef save_videos(video, dt, video_path=None):\n    if isinstance(video, list):\n        cam_names = list(video[0].keys())\n        h, w, _ = video[0][cam_names[0]].shape\n        w = w * len(cam_names)\n        fps = int(1/dt)\n        out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))",
+        "type": "code",
+        "location": "/aloha_scripts/visualize_episodes.py:61-80"
+    },
+    "257": {
+        "file_id": 17,
+        "content": "The code loads data from an HDF5 file, creates videos and images for visualization, and saves them to specified paths. If the dataset name is not provided, it generates one based on episode index. The code also defines a function to save videos using OpenCV's VideoWriter.",
+        "type": "comment"
+    },
+    "258": {
+        "file_id": 17,
+        "content": "        for ts, image_dict in enumerate(video):\n            images = []\n            for cam_name in cam_names:\n                image = image_dict[cam_name]\n                image = image[:, :, [2, 1, 0]] # swap B and R channel\n                images.append(image)\n            images = np.concatenate(images, axis=1)\n            out.write(images)\n        out.release()\n        print(f'Saved video to: {video_path}')\n    elif isinstance(video, dict):\n        cam_names = list(video.keys())\n        all_cam_videos = []\n        for cam_name in cam_names:\n            all_cam_videos.append(video[cam_name])\n        all_cam_videos = np.concatenate(all_cam_videos, axis=2) # width dimension\n        n_frames, h, w, _ = all_cam_videos.shape\n        fps = int(1 / dt)\n        out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))\n        for t in range(n_frames):\n            image = all_cam_videos[t]\n            image = image[:, :, [2, 1, 0]]  # swap B and R channel\n            out.write(image)\n        out.release()",
+        "type": "code",
+        "location": "/aloha_scripts/visualize_episodes.py:81-105"
+    },
+    "259": {
+        "file_id": 17,
+        "content": "This code concatenates images from multiple cameras into a single video, swaps the B and R channel colors, and saves it to the specified path. If the input is a dictionary of camera videos, it combines them along the width dimension.",
+        "type": "comment"
+    },
+    "260": {
+        "file_id": 17,
+        "content": "        print(f'Saved video to: {video_path}')\ndef visualize_joints(qpos_list, command_list, plot_path=None, ylim=None, label_overwrite=None):\n    if label_overwrite:\n        label1, label2 = label_overwrite\n    else:\n        label1, label2 = 'State', 'Command'\n    qpos = np.array(qpos_list) # ts, dim\n    command = np.array(command_list)\n    num_ts, num_dim = qpos.shape\n    h, w = 2, num_dim\n    num_figs = num_dim\n    fig, axs = plt.subplots(num_figs, 1, figsize=(8, 2 * num_dim))\n    # plot joint state\n    all_names = [name + '_left' for name in STATE_NAMES] + [name + '_right' for name in STATE_NAMES]\n    for dim_idx in range(num_dim):\n        ax = axs[dim_idx]\n        ax.plot(qpos[:, dim_idx], label=label1)\n        ax.set_title(f'Joint {dim_idx}: {all_names[dim_idx]}')\n        ax.legend()\n    # plot arm command\n    for dim_idx in range(num_dim):\n        ax = axs[dim_idx]\n        ax.plot(command[:, dim_idx], label=label2)\n        ax.legend()\n    if ylim:\n        for dim_idx in range(num_dim):\n            ax = axs[dim_idx]",
+        "type": "code",
+        "location": "/aloha_scripts/visualize_episodes.py:106-138"
+    },
+    "261": {
+        "file_id": 17,
+        "content": "This function visualizes joint positions and arm commands over time. It takes qpos_list and command_list as inputs, and optionally plot_path, ylim, and label_overwrite. The function plots joint state and arm command for each dimension in separate subplots. If label_overwrite is provided, it uses those labels; otherwise, it defaults to 'State' and 'Command'. It also allows setting a custom y-axis limit.",
+        "type": "comment"
+    },
+    "262": {
+        "file_id": 17,
+        "content": "            ax.set_ylim(ylim)\n    plt.tight_layout()\n    plt.savefig(plot_path)\n    print(f'Saved qpos plot to: {plot_path}')\n    plt.close()\ndef visualize_single(efforts_list, label, plot_path=None, ylim=None, label_overwrite=None):\n    efforts = np.array(efforts_list) # ts, dim\n    num_ts, num_dim = efforts.shape\n    h, w = 2, num_dim\n    num_figs = num_dim\n    fig, axs = plt.subplots(num_figs, 1, figsize=(w, h * num_figs))\n    # plot joint state\n    all_names = [name + '_left' for name in STATE_NAMES] + [name + '_right' for name in STATE_NAMES]\n    for dim_idx in range(num_dim):\n        ax = axs[dim_idx]\n        ax.plot(efforts[:, dim_idx], label=label)\n        ax.set_title(f'Joint {dim_idx}: {all_names[dim_idx]}')\n        ax.legend()\n    if ylim:\n        for dim_idx in range(num_dim):\n            ax = axs[dim_idx]\n            ax.set_ylim(ylim)\n    plt.tight_layout()\n    plt.savefig(plot_path)\n    print(f'Saved effort plot to: {plot_path}')\n    plt.close()\ndef visualize_base(readings, plot_path=None):\n    readings = np.array(readings) # ts, dim",
+        "type": "code",
+        "location": "/aloha_scripts/visualize_episodes.py:139-172"
+    },
+    "263": {
+        "file_id": 17,
+        "content": "The code defines two functions: `visualize_single` and `visualize_base`. The `visualize_single` function plots efforts data for a specific episode, while the `visualize_base` function plots base readings. Both functions save the resulting plot and close the plot window.",
+        "type": "comment"
+    },
+    "264": {
+        "file_id": 17,
+        "content": "    num_ts, num_dim = readings.shape\n    num_figs = num_dim\n    fig, axs = plt.subplots(num_figs, 1, figsize=(8, 2 * num_dim))\n    # plot joint state\n    all_names = BASE_STATE_NAMES\n    for dim_idx in range(num_dim):\n        ax = axs[dim_idx]\n        ax.plot(readings[:, dim_idx], label='raw')\n        ax.plot(np.convolve(readings[:, dim_idx], np.ones(20)/20, mode='same'), label='smoothed_20')\n        ax.plot(np.convolve(readings[:, dim_idx], np.ones(10)/10, mode='same'), label='smoothed_10')\n        ax.plot(np.convolve(readings[:, dim_idx], np.ones(5)/5, mode='same'), label='smoothed_5')\n        ax.set_title(f'Joint {dim_idx}: {all_names[dim_idx]}')\n        ax.legend()\n    # if ylim:\n    #     for dim_idx in range(num_dim):\n    #         ax = axs[dim_idx]\n    #         ax.set_ylim(ylim)\n    plt.tight_layout()\n    plt.savefig(plot_path)\n    print(f'Saved effort plot to: {plot_path}')\n    plt.close()\ndef visualize_timestamp(t_list, dataset_path):\n    plot_path = dataset_path.replace('.pkl', '_timestamp.png')\n    h, w = 4, 10",
+        "type": "code",
+        "location": "/aloha_scripts/visualize_episodes.py:173-201"
+    },
+    "265": {
+        "file_id": 17,
+        "content": "Code plots joint state readings and creates a visualization for each dimension, with smoothed versions of the data using different window sizes. The plot is saved to a specified path, and a message is printed confirming the save location. A function for timestamp visualization is also defined.",
+        "type": "comment"
+    },
+    "266": {
+        "file_id": 17,
+        "content": "    fig, axs = plt.subplots(2, 1, figsize=(w, h*2))\n    # process t_list\n    t_float = []\n    for secs, nsecs in t_list:\n        t_float.append(secs + nsecs * 10E-10)\n    t_float = np.array(t_float)\n    ax = axs[0]\n    ax.plot(np.arange(len(t_float)), t_float)\n    ax.set_title(f'Camera frame timestamps')\n    ax.set_xlabel('timestep')\n    ax.set_ylabel('time (sec)')\n    ax = axs[1]\n    ax.plot(np.arange(len(t_float)-1), t_float[:-1] - t_float[1:])\n    ax.set_title(f'dt')\n    ax.set_xlabel('timestep')\n    ax.set_ylabel('time (sec)')\n    plt.tight_layout()\n    plt.savefig(plot_path)\n    print(f'Saved timestamp plot to: {plot_path}')\n    plt.close()\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--dataset_dir', action='store', type=str, help='Dataset dir.', required=True)\n    parser.add_argument('--episode_idx', action='store', type=int, help='Episode index.', required=False)\n    parser.add_argument('--ismirror', action='store_true')\n    main(vars(parser.parse_args()))",
+        "type": "code",
+        "location": "/aloha_scripts/visualize_episodes.py:202-231"
+    },
+    "267": {
+        "file_id": 17,
+        "content": "The code generates a timestamp plot for camera frames. It processes the time-stamp list, creates two subplots - one for timestamps and another for delta time (dt). The timestamps are plotted against their corresponding timestep and time in seconds. The delta time is also plotted against timesteps. Finally, it saves the plot at a specified location and prints the file path.",
+        "type": "comment"
+    },
+    "268": {
+        "file_id": 18,
+        "content": "/aloha_scripts/waypoint_control.py",
+        "type": "filepath"
+    },
+    "269": {
+        "file_id": 18,
+        "content": "This code initializes necessary components, defines conversion functions and calculates target poses, handles states and debug settings. It checks for motion commands and executes robot movement accordingly, with a 'End!' statement to end the program.",
+        "type": "summary"
+    },
+    "270": {
+        "file_id": 18,
+        "content": "import pyagxrobots\nimport time\nimport IPython\ne = IPython.embed\nimport pyrealsense2 as rs\nfrom pyquaternion import Quaternion\nimport numpy as np\nfrom simple_pid import PID\nimport argparse\nnp.set_printoptions(precision=3, suppress=True)\nargparser = argparse.ArgumentParser()\nargparser.add_argument('--debug', action='store_true')\nargs = argparser.parse_args()\n# setup base\ntracer = pyagxrobots.pysdkugv.TracerBase()\ntracer.EnableCAN()\n# setup realsense\npipeline = rs.pipeline()\ncfg = rs.config()\n# if only pose stream is enabled, fps is higher (202 vs 30)\ncfg.enable_stream(rs.stream.pose)\npipeline.start(cfg)\ndef yaw_to_vector(yaw):\n    return np.array([np.cos(yaw), np.sin(yaw)])\ndef get_pose():\n    frames = pipeline.wait_for_frames()\n    pose_frame = frames.get_pose_frame()\n    pose = pose_frame.get_pose_data()\n    yaw = -1 * Quaternion(pose.rotation.w, pose.rotation.x, pose.rotation.y, pose.rotation.z).yaw_pitch_roll[0]\n    pose_np = np.array([pose.translation.z, pose.translation.x, yaw])\n    return pose_np\nclass PIDController:",
+        "type": "code",
+        "location": "/aloha_scripts/waypoint_control.py:1-40"
+    },
+    "271": {
+        "file_id": 18,
+        "content": "This code imports necessary libraries and sets up the base, Realsense camera, and PID controller. It defines functions for converting yaw to a vector and obtaining the robot's pose. The TracerBase is enabled for CAN communication and the pipeline for the camera is started with only the pose stream enabled for higher FPS. A class for a PIDController is also defined.",
+        "type": "comment"
+    },
+    "272": {
+        "file_id": 18,
+        "content": "    def __init__(self, kp, ki, kd):\n        self.kp = kp\n        self.ki = ki\n        self.kd = kd\n        self.prev_error = 0\n        self.integral = 0\n    def compute(self, error, dt=1):\n        self.integral += error * dt\n        derivative = (error - self.prev_error) / dt\n        output = self.kp * error + self.ki * self.integral + self.kd * derivative\n        self.prev_error = error\n        return output\ndef normalize_angle(angle):\n    while angle > np.pi:\n        angle -= 2 * np.pi\n    while angle < -np.pi:\n        angle += 2 * np.pi\n    return angle\n# init global coords\nr = 0.2\nstart_pose = get_pose()\ndelta_target_pose_l = [\n    np.array([\n        r * np.sin(theta), \n        -(r - r * np.cos(theta)), \n        -theta]) for theta in np.linspace(0, np.pi / 2, int((np.pi / 2) // (0.01 / r)))\n]\ntarget_pose_l = []\nfor delta_target_pose in delta_target_pose_l:\n    transformed_delta_target_pose_x = delta_target_pose[0] * np.cos(start_pose[2]) - delta_target_pose[1] * np.sin(start_pose[2])\n    transformed_delta_targe",
+        "type": "code",
+        "location": "/aloha_scripts/waypoint_control.py:41-73"
+    },
+    "273": {
+        "file_id": 18,
+        "content": "This code initializes a PID controller and provides a function to normalize angles. It also calculates target poses by incrementally moving along a path within a specified range of angle.",
+        "type": "comment"
+    },
+    "274": {
+        "file_id": 18,
+        "content": "t_pose_y = delta_target_pose[0] * np.sin(start_pose[2]) + delta_target_pose[1] * np.cos(start_pose[2])\n    transformed_target_pose = np.array([\n        start_pose[0] + transformed_delta_target_pose_x,\n        start_pose[1] + transformed_delta_target_pose_y,\n        normalize_angle(start_pose[2] + delta_target_pose[2])\n    ])\n    target_pose_l.append(transformed_target_pose)\nMAX_LINEAR_VEL = 0.1\nMIN_LINEAR_VEL = -0.1\nMAX_ANGULAR_VEL = 0.3\nMIN_ANGULAR_VEL = -0.3\nPOS_THRESHOLD = 0.05\nORN_THRESHOLD = 0.1\nDT = 0.1\nprint(target_pose_l)\nfor target_pose in target_pose_l:\n    target_pos = target_pose[:2]\n    target_orn = target_pose[2]\n    while True:\n        curr_pose = get_pose()\n        curr_pos, curr_orn = curr_pose[:2], curr_pose[2]\n        distance_to_target = np.linalg.norm(target_pos - curr_pos) \n        error_orn = normalize_angle(target_orn - curr_orn)\n        if distance_to_target < POS_THRESHOLD and abs(error_orn) < ORN_THRESHOLD:\n            break\n        target_heading = np.arctan2(target_pos[1] - curr_pos[1], target_pos[0] - curr_pos[0])",
+        "type": "code",
+        "location": "/aloha_scripts/waypoint_control.py:73-104"
+    },
+    "275": {
+        "file_id": 18,
+        "content": "This code calculates a transformed target pose based on the current start pose and delta target pose. It then stores these poses in the list target_pose_l. The code then loops until it reaches the target pose, updating the current pose and checking if the distance to the target position and orientation are within specified thresholds. If so, the loop breaks. The code also defines constants for velocity limits and threshold values.",
+        "type": "comment"
+    },
+    "276": {
+        "file_id": 18,
+        "content": "        error_heading = normalize_angle(target_heading - curr_orn)\n        if distance_to_target < POS_THRESHOLD:\n            is_forward = 1\n            v = 0\n            w = error_orn / DT\n        else:\n            is_forward = np.sign(np.dot(\n                yaw_to_vector(target_heading), yaw_to_vector(curr_orn)))\n            v = distance_to_target * is_forward / DT\n            w = error_heading * is_forward / DT\n        v = np.clip(v, MIN_LINEAR_VEL, MAX_LINEAR_VEL)\n        w = np.clip(w, MIN_ANGULAR_VEL, MAX_ANGULAR_VEL)\n        print(f'''\n            curr_pose: {curr_pose},\n            target_pose: {target_pose},\n            is_forward: {is_forward},\n            action: {np.array([v, w])},\n            error_heading: {error_heading:0.3f},\n            error_orn: {error_orn:0.3f},\n            distance: {distance_to_target:0.3f}\n            --------------------------\n        ''')\n        if args.debug:\n            tracer.SetMotionCommand(\n                linear_vel=0,\n                angular_vel=0.1\n            )",
+        "type": "code",
+        "location": "/aloha_scripts/waypoint_control.py:105-135"
+    },
+    "277": {
+        "file_id": 18,
+        "content": "This code calculates the robot's linear and angular velocities based on its current position, target position, and current orientation. It then applies these velocities to move the robot towards the target while accounting for distance and heading errors. The code also prints out various information about the robot's state and, if in debug mode, sets the tracer's motion commands to zero.",
+        "type": "comment"
+    },
+    "278": {
+        "file_id": 18,
+        "content": "            time.sleep(1)\n        else:\n            # set motion command\n            tracer.SetMotionCommand(\n                linear_vel=v,\n                angular_vel=w\n            )\n            time.sleep(0.05)\nprint('End!')",
+        "type": "code",
+        "location": "/aloha_scripts/waypoint_control.py:136-147"
+    },
+    "279": {
+        "file_id": 18,
+        "content": "This code checks if the motion command has been received. If it has, it sets the linear and angular velocity for the robot's movement and then waits 0.05 seconds before executing the movement. If no motion command is detected, it simply sleeps for 1 second. The program ends with a 'End!' print statement.",
+        "type": "comment"
+    },
+    "280": {
+        "file_id": 19,
+        "content": "/commands.txt",
+        "type": "filepath"
+    },
+    "281": {
+        "file_id": 19,
+        "content": "This code retrieves the serial attributes of four ttyUSB devices using udevadm info and filters the results with grep. It then sets an ID_MM_DEVICE_IGNORE attribute to 1 for each device, adjusts latency timers, and creates symbolic links (ttyDXL_puppet_left, ttyDXL_master_right, ttyDXL_master_left, ttyDXL_puppet_right) for each device.",
+        "type": "summary"
+    },
+    "282": {
+        "file_id": 19,
+        "content": "udevadm info --name=/dev/ttyUSB0 --attribute-walk | grep serial\nSUBSYSTEM==\"tty\", ATTRS{serial}==\"FT6Z5N1W\", ENV{ID_MM_DEVICE_IGNORE}=\"1\", ATTR{device/latency_timer}=\"1\", SYMLINK+=\"ttyDXL_puppet_left\"\nSUBSYSTEM==\"tty\", ATTRS{serial}==\"FT66U3A8\", ENV{ID_MM_DEVICE_IGNORE}=\"1\", ATTR{device/latency_timer}=\"1\", SYMLINK+=\"ttyDXL_master_right\"\nSUBSYSTEM==\"tty\", ATTRS{serial}==\"FT66U2XR\", ENV{ID_MM_DEVICE_IGNORE}=\"1\", ATTR{device/latency_timer}=\"1\", SYMLINK+=\"ttyDXL_master_left\"\nSUBSYSTEM==\"tty\", ATTRS{serial}==\"FT6Z5NYV\", ENV{ID_MM_DEVICE_IGNORE}=\"1\", ATTR{device/latency_timer}=\"1\", SYMLINK+=\"ttyDXL_puppet_right\"",
+        "type": "code",
+        "location": "/commands.txt:1-6"
+    },
+    "283": {
+        "file_id": 19,
+        "content": "This code retrieves the serial attributes of four ttyUSB devices using udevadm info and filters the results with grep. It then sets an ID_MM_DEVICE_IGNORE attribute to 1 for each device, adjusts latency timers, and creates symbolic links (ttyDXL_puppet_left, ttyDXL_master_right, ttyDXL_master_left, ttyDXL_puppet_right) for each device.",
+        "type": "comment"
+    },
+    "284": {
+        "file_id": 20,
+        "content": "/config/master_modes_left.yaml",
+        "type": "filepath"
+    },
+    "285": {
+        "file_id": 20,
+        "content": "The code configures a port \"/dev/ttyDXL_master_left\" for left master device and disables torque for arm and gripper singles.",
+        "type": "summary"
+    },
+    "286": {
+        "file_id": 20,
+        "content": "port: /dev/ttyDXL_master_left\ngroups:\n  arm:\n    torque_enable: false\nsingles:\n  gripper:\n    torque_enable: false",
+        "type": "code",
+        "location": "/config/master_modes_left.yaml:1-9"
+    },
+    "287": {
+        "file_id": 20,
+        "content": "The code configures a port \"/dev/ttyDXL_master_left\" for left master device and disables torque for arm and gripper singles.",
+        "type": "comment"
+    },
+    "288": {
+        "file_id": 21,
+        "content": "/config/master_modes_right.yaml",
+        "type": "filepath"
+    },
+    "289": {
+        "file_id": 21,
+        "content": "This YAML file defines configuration for a robot's right side, specifying the port and individual component settings such as torque enable for arm and gripper.",
+        "type": "summary"
+    },
+    "290": {
+        "file_id": 21,
+        "content": "port: /dev/ttyDXL_master_right\ngroups:\n  arm:\n    torque_enable: false\nsingles:\n  gripper:\n    torque_enable: false",
+        "type": "code",
+        "location": "/config/master_modes_right.yaml:1-9"
+    },
+    "291": {
+        "file_id": 21,
+        "content": "This YAML file defines configuration for a robot's right side, specifying the port and individual component settings such as torque enable for arm and gripper.",
+        "type": "comment"
+    },
+    "292": {
+        "file_id": 22,
+        "content": "/config/puppet_modes_left.yaml",
+        "type": "filepath"
+    },
+    "293": {
+        "file_id": 22,
+        "content": "This YAML file configures the puppet_left device's port and defines its modes for arm and gripper, setting parameters like operating mode, profile type, velocity, acceleration, and torque enable.",
+        "type": "summary"
+    },
+    "294": {
+        "file_id": 22,
+        "content": "port: /dev/ttyDXL_puppet_left\ngroups:\n  arm:\n    operating_mode: position\n    profile_type: velocity\n    profile_velocity: 0\n    profile_acceleration: 0\n    torque_enable: true\nsingles:\n  gripper:\n    operating_mode: linear_position\n    profile_type: velocity\n    profile_velocity: 0\n    profile_acceleration: 0\n    torque_enable: true",
+        "type": "code",
+        "location": "/config/puppet_modes_left.yaml:1-17"
+    },
+    "295": {
+        "file_id": 22,
+        "content": "This YAML file configures the puppet_left device's port and defines its modes for arm and gripper, setting parameters like operating mode, profile type, velocity, acceleration, and torque enable.",
+        "type": "comment"
+    },
+    "296": {
+        "file_id": 23,
+        "content": "/config/puppet_modes_right.yaml",
+        "type": "filepath"
+    },
+    "297": {
+        "file_id": 23,
+        "content": "Config YAML for controlling the right puppet arm and gripper in mobile-aloha, specifying modes and profiles for position and linear position control.",
+        "type": "summary"
+    },
+    "298": {
+        "file_id": 23,
+        "content": "port: /dev/ttyDXL_puppet_right\ngroups:\n  arm:\n    operating_mode: position\n    profile_type: velocity\n    profile_velocity: 0\n    profile_acceleration: 0\n    torque_enable: true\nsingles:\n  gripper:\n    operating_mode: linear_position\n    profile_type: velocity\n    profile_velocity: 0\n    profile_acceleration: 0\n    torque_enable: true",
+        "type": "code",
+        "location": "/config/puppet_modes_right.yaml:1-17"
+    },
+    "299": {
+        "file_id": 23,
+        "content": "Config YAML for controlling the right puppet arm and gripper in mobile-aloha, specifying modes and profiles for position and linear position control.",
+        "type": "comment"
+    }
+}
