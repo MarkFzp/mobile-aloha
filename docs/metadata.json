@@ -12,7 +12,7 @@
         "1": {
             "filepath": "/README.md",
             "entry_id": 4,
-            "language_id": "plain-text"
+            "language_id": "markdown"
         },
         "2": {
             "filepath": "/aloha_scripts/auto_record.sh",
